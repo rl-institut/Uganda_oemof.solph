@@ -1,38 +1,15 @@
-# rli_template
-Template repository for creating new projects under the RLI's umbrella
+## Installation
 
-## Get started
+The currently supported Python Version are 3.8.8, 3.8,9 and 3.8.10. For using Uganda-oemof.solph clone the repository to your local machine. Then create a new virtual environment with Python Version 3.8.10. Activate the new virtual environment and move to the repository folder to install the requirements of OWEFE.
 
-Simply click on the green `Use this template` button on the left of the `Clone or download` button.
+     pip install -r requirements.txt
+     pip install oemof.solph=0.4.4
 
-The detailed instructions to create a new repository from this template can be found [here](https://help.github.com/en/articles/creating-a-repository-from-a-template).
+Further, you need to install a solver in your system. To do so, please see the [oemof README](https://github.com/oemof/oemof-solph#readme)
 
-## src folder
+## Documentation
 
-This folder is where you should place the code of your package (package name to be edited in `setup.py` under name)
-
-You can install it locally for developing with
-
-    python setup.py install
-    
-More details for packaging are available on [https://packaging.python.org](https://packaging.python.org/tutorials/packaging-projects/)
-
-
-## Docs
-
-To build the docs simply go to the `docs` folder
-
-    cd docs
-
-Install the requirements
-
-    pip install -r docs_requirements.txt
-
-and run
-
-    make html
-
-The output will then be located in `docs/_build/html` and can be opened with your favorite browser
+Documentation is currenty done in README files.
 
 ## Code linting
 
@@ -42,3 +19,12 @@ In this template, 3 possible linters are proposed:
 - black sends warning but can also fix the files for you
 
 You can perfectly use the 3 of them or subset, at your preference. Don't forget to edit `.travis.yml` if you want to deactivate the automatic testing of some linters!
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 - see the [LICENSE.md](https://github.com/rl-institut/Uganda-oemof.solph/blob/master/LICENSE) file for details.
+
+# rli_template
+
+This repository is based on rli-template, a template repository for creating new projects under the RLI's umbrella
+
