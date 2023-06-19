@@ -3,9 +3,9 @@
 The currently supported Python Version are 3.8.8, 3.8,9 and 3.8.10. For using Uganda-oemof.solph clone the repository to your local machine. Then create a new virtual environment with Python Version 3.8.10. Activate the new virtual environment and move to the repository folder to install the requirements of OWEFE.
 
      pip install -r requirements.txt
-     pip install oemof.solph=0.4.4
 
-Further, you need to install a solver in your system. To do so, please see the [oemof README](https://github.com/oemof/oemof-solph#readme)
+
+Further, you need to install a solver in your system. To do so, please see the [oemof documentation](https://oemof-solph.readthedocs.io/en/latest/readme.html)
 
 ## Documentation
 
