@@ -5,7 +5,7 @@ The currently supported Python Version are 3.8.8, 3.8,9 and 3.8.10. For using Ug
      pip install -r requirements.txt
 
 
-Further, you need to install a solver in your system. To do so, please see the [oemof documentation](https://oemof-solph.readthedocs.io/en/latest/readme.html)
+Further, you need to install a solver in your system. To do so, please see the [oemof.solph documentation](https://oemof-solph.readthedocs.io/en/latest/readme.html)
 
 ## Documentation
 
