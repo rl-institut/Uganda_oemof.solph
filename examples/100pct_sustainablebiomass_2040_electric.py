@@ -77,23 +77,25 @@ from oemof import solph
 
 
 # Read data file
-filename = os.path.join(os.getcwd(), "storage_investment.csv")
+filename = os.path.join(os.getcwd(), "uganda_sequences.csv")
 
 data = pd.read_csv(filename)
 number_timesteps = len(data)
 
+print(data)
 ##########################################################################
 # Initialize the energy system and read/calculate necessary parameters
 ##########################################################################
 
 logger.define_logging()
 logging.info("Initialize the energy system")
-date_time_index = solph.create_time_index(2012, number=number_timesteps)
+date_time_index = solph.create_time_index(2021, number=number_timesteps)
 energysystem = solph.EnergySystem(
     timeindex=date_time_index, infer_last_interval=False
 )
 
 price_fuel_oil = 37.9
+price_biomass = 1.042
 
 # If the period is one year the equivalent periodical costs (epc) of an
 # investment are equal to the annuity. Use oemof's economic tools.
@@ -101,8 +103,9 @@ price_fuel_oil = 37.9
 epc_wind = 138172.5  # calculated before model; formula: economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_pv = 90345  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_hydro = 247500  # economics.annuity(capex=1000, n=20, wacc=0.05)
-epc_storage = 21812.5  # economics.annuity(capex=1000, n=20, wacc=0.05)
+epc_battery = 21812.5  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
+epc_biomass = 206250  # sugarcane bagasse CHP
 
 ##########################################################################
 # Create oemof objects
@@ -110,22 +113,33 @@ epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 
 logging.info("Create oemof objects")
 # create fuel oil bus
-bfuel = solph.Bus(label="fuel_oil")
+bfuel = solph.Bus(label="fuel_oil_bus")
 
 # create electricity bus
 bel = solph.Bus(label="electricity")
 
-energysystem.add(bfuel, bel)
+# create heat bus
+# bheat = solph.Bus(label="heat")
+
+# create biogas bus
+bbm = solph.Bus(label='biomass_bus')
+
+energysystem.add(bfuel, bel, bbm)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
     label="excess_bel", inputs={bel: solph.Flow()}
 )
 
-# create source object representing the fuel oil commodity (annual limit)
+# create source object representing the fuel oil commodity
 fuel_oil_resource = solph.components.Source(
-    label="fuel_oil", outputs={bfuel: solph.Flow(variable_costs=price_fuel_oil)}
-)
+    label="fuel_oil", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_fuel_oil)}
+)  # nominal value is set to 1 to model continuous operation of fuel oil power plant
+
+# create source object representing the biogas commodity
+biomass_resource = solph.components.Source(
+    label="biomass", outputs={bbm: solph.Flow(nominal_value=1, variable_costs=price_biomass)}
+)  # nominal value is set to 1 to model continuous operation of fuel oil power plant
 
 # create fixed source object representing wind power plants
 wind = solph.components.Source(
@@ -137,22 +151,25 @@ wind = solph.components.Source(
         )
     },
 )
+
 # create fixed source object representing pv power plants
 pv = solph.components.Source(
     label="pv",
     outputs={
         bel: solph.Flow(
-            fix=data["pv"], nominal_value=60, investment=solph.Investment(ep_costs=epc_pv)
+            fix=data["pv"], investment=solph.Investment(ep_costs=epc_pv, existing=60)
         )
     },
 )
+
 # create fixed source object representing hydropower plants
 hydro = solph.components.Source(
     label="hydro",
     outputs={
         bel: solph.Flow(
-            fix=data["hydro"], nominal_value=1070, variable_costs=3,
-            investment=solph.Investment(ep_costs=epc_hydro, maximum=860)
+            fix=data["hydro"], variable_costs=3,
+            investment=solph.Investment(ep_costs=epc_hydro, existing=1070, maximum=1930)  # in total the
+            # maximum hydro potential is 3000 MW, please verify
         )
     },
 )
@@ -160,7 +177,7 @@ hydro = solph.components.Source(
 # create simple sink object representing the electrical demand
 demand = solph.components.Sink(
     label="electricity demand",
-    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=1)},
+    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=40500000)},
 )
 
 # create simple transformer object representing a fuel oil plant
@@ -169,16 +186,31 @@ pp_fuel_oil = solph.components.Transformer(
     inputs={bfuel: solph.Flow()},
     outputs={
         bel: solph.Flow(
-            nominal_value=92, variable_costs=3.4,
-            investment=solph.Investment(ep_costs=epc_fuel_oil)
+            variable_costs=3.4,
+            investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92, maximum=0)
+            # see BAU is investment in oil possible?;
+            # in RE scenario it is not an investment object -> maximum = 0
         )
     },
     conversion_factors={bel: 0.58},
 )
 
+# Biomass Heat and Power Cogeneration Plant
+pp_biomass = solph.components.Transformer(
+    label="pp_biomass",
+    inputs={bbm: solph.Flow()},
+    outputs={
+        bel: solph.Flow(
+            variable_costs=5,
+            investment=solph.Investment(ep_costs=epc_biomass, existing=112, maximum=1700)
+        )
+    },
+    conversion_factors={bel: 0.35},
+)
+
 # create storage object representing a battery
-storage = solph.components.GenericStorage(
-    label="storage",
+battery_storage = solph.components.GenericStorage(
+    label="battery",
     inputs={bel: solph.Flow(variable_costs=0.0001)},
     outputs={bel: solph.Flow()},
     loss_rate=0.00,
@@ -187,10 +219,11 @@ storage = solph.components.GenericStorage(
     invest_relation_output_capacity=1 / 6,
     inflow_conversion_factor=1,
     outflow_conversion_factor=0.9,
-    investment=solph.Investment(ep_costs=epc_storage),
+    investment=solph.Investment(ep_costs=epc_battery),
 )
 
-energysystem.add(excess, fuel_oil_resource, wind, pv, hydro, demand, pp_fuel_oil, storage)
+energysystem.add(excess, fuel_oil_resource, biomass_resource, wind, pv, hydro, demand, pp_fuel_oil, pp_biomass,
+                 battery_storage)
 
 ##########################################################################
 # Optimise the energy system
@@ -221,7 +254,7 @@ my_results = electricity_bus["scalars"]
 
 # installed capacity of storage in GWh
 my_results["storage_invest_GWh"] = (
-        results[(storage, None)]["scalars"]["invest"] / 1e6
+        results[(battery_storage, None)]["scalars"]["invest"] / 1e6
 )
 
 # installed capacity of wind power plant in MW
@@ -237,4 +270,3 @@ my_results["res_share"] = (
 )
 
 pp.pprint(my_results)
-
