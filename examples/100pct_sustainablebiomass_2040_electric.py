@@ -42,7 +42,7 @@ the main setting for the optimization variation 1:
 
 Data
 ----
-storage_investment.csv
+uganda_sequences.csv
 
 Installation requirements
 -------------------------
@@ -104,8 +104,10 @@ epc_wind = 138172.5  # calculated before model; formula: economics.annuity(capex
 epc_pv = 90345  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_hydro = 247500  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_battery = 21812.5  # economics.annuity(capex=1000, n=20, wacc=0.05)
+epc_hydrogen_storage = 3937.5
 epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
+epc_electrolyzer = 50625  # hydrogen electrolyzer
 
 ##########################################################################
 # Create oemof objects
@@ -118,13 +120,16 @@ bfuel = solph.Bus(label="fuel_oil_bus")
 # create electricity bus
 bel = solph.Bus(label="electricity")
 
+# create hydrogen bus
+bhg = solph.Bus(label='hydrogen_bus')
+
 # create heat bus
 # bheat = solph.Bus(label="heat")
 
 # create biogas bus
 bbm = solph.Bus(label='biomass_bus')
 
-energysystem.add(bfuel, bel, bbm)
+energysystem.add(bfuel, bel, bbm, bhg)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -175,7 +180,7 @@ hydro = solph.components.Source(
 )
 
 # create simple sink object representing the electrical demand
-demand = solph.components.Sink(
+demand_el = solph.components.Sink(
     label="electricity demand",
     inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=40500000)},
 )
@@ -208,10 +213,24 @@ pp_biomass = solph.components.Transformer(
     conversion_factors={bel: 0.35},
 )
 
+
+# Electrolyzer
+electrolyzer = solph.components.Transformer(
+    label="electrolyzer",
+    inputs={bhg: solph.Flow()},
+    outputs={
+        bel: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_electrolyzer)
+        )
+    },
+    conversion_factors={bel: 0.665},
+)
+
 # create storage object representing a battery
 battery_storage = solph.components.GenericStorage(
     label="battery",
-    inputs={bel: solph.Flow(variable_costs=0.0001)},
+    inputs={bel: solph.Flow(variable_costs=0)},
     outputs={bel: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
@@ -222,8 +241,23 @@ battery_storage = solph.components.GenericStorage(
     investment=solph.Investment(ep_costs=epc_battery),
 )
 
-energysystem.add(excess, fuel_oil_resource, biomass_resource, wind, pv, hydro, demand, pp_fuel_oil, pp_biomass,
-                 battery_storage)
+# create storage object representing a hydrogen storage
+hydrogen_storage = solph.components.GenericStorage(
+    label="hydrogen_storage",
+    inputs={bhg: solph.Flow(variable_costs=0)},
+    outputs={bhg: solph.Flow()},
+    loss_rate=0.00,
+    initial_storage_level=0,
+    invest_relation_input_capacity=1 / 6,
+    invest_relation_output_capacity=1 / 6,
+    inflow_conversion_factor=1,
+    outflow_conversion_factor=0.88,
+    investment=solph.Investment(ep_costs=epc_hydrogen_storage),
+)
+
+
+energysystem.add(excess, fuel_oil_resource, biomass_resource, wind, pv, hydro, demand_el, pp_fuel_oil, pp_biomass,
+                 battery_storage, electrolyzer, hydrogen_storage)
 
 ##########################################################################
 # Optimise the energy system
@@ -266,7 +300,7 @@ my_results["wind_invest_MW"] = (
 my_results["res_share"] = (
         1
         - results[(pp_fuel_oil, bel)]["sequences"].sum()
-        / results[(bel, demand)]["sequences"].sum()
+        / results[(bel, demand_el)]["sequences"].sum()
 )
 
 pp.pprint(my_results)
