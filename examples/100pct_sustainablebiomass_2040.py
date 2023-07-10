@@ -95,7 +95,11 @@ energysystem = solph.EnergySystem(
 )
 
 price_fuel_oil = 37.9
+price_lpg = 50
 price_biomass = 1.042
+
+
+# fossil_share = 0.2, we can do maximum biomass use; or required res_share!
 
 # If the period is one year the equivalent periodical costs (epc) of an
 # investment are equal to the annuity. Use oemof's economic tools.
@@ -108,6 +112,10 @@ epc_hydrogen_storage = 3937.5
 epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
+epc_cooker_el = 10000
+epc_stove_unimproved = 1000
+epc_stove_improved = 4000
+epc_lpg_stove = 1000
 
 ##########################################################################
 # Create oemof objects
@@ -124,12 +132,18 @@ bel = solph.Bus(label="electricity")
 bhg = solph.Bus(label='hydrogen_bus')
 
 # create heat bus
-# bheat = solph.Bus(label="heat")
+bheat = solph.Bus(label="heat_bus")
+
+# create cooking bus
+bcook = solph.Bus(label="cooking_bus")
 
 # create biogas bus
 bbm = solph.Bus(label='biomass_bus')
 
-energysystem.add(bfuel, bel, bbm, bhg)
+# create lpg bus
+blpg = solph.Bus(label='lpg_bus')
+
+energysystem.add(bfuel, bel, bbm, bheat, bcook, bhg, blpg)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -140,11 +154,23 @@ excess = solph.components.Sink(
 fuel_oil_resource = solph.components.Source(
     label="fuel_oil", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_fuel_oil)}
 )  # nominal value is set to 1 to model continuous operation of fuel oil power plant
+                # ominal_value=fossil_share
+                #* consumption_total
+                #/ 0.58
+                #* number_timesteps
+                #/ 8760,
+                #full_load_time_max=1,
+           #)
 
 # create source object representing the biogas commodity
 biomass_resource = solph.components.Source(
-    label="biomass", outputs={bbm: solph.Flow(nominal_value=1, variable_costs=price_biomass)}
-)  # nominal value is set to 1 to model continuous operation of fuel oil power plant
+    label="biomass", outputs={bbm: solph.Flow(variable_costs=price_biomass)}
+)
+
+# create source object representing lpg commodity
+lpg_resource = solph.components.Source(
+    label="lpg", outputs={blpg: solph.Flow(variable_costs=price_lpg)}
+)
 
 # create fixed source object representing wind power plants
 wind = solph.components.Source(
@@ -185,13 +211,25 @@ demand_el = solph.components.Sink(
     inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=40500000)},
 )
 
+# create simple sink object representing the heat demand
+demand_heat = solph.components.Sink(
+    label="heat demand",
+    inputs={bel: solph.Flow(fix=data["demand_heat"], nominal_value=40500000)},
+)
+
+# create simple sink object representing the cooking demand
+demand_cooking = solph.components.Sink(
+    label="cooking demand",
+    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+)
+
 # create simple transformer object representing a fuel oil plant
 pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
     inputs={bfuel: solph.Flow()},
     outputs={
         bel: solph.Flow(
-            variable_costs=3.4,  # summed_max=0.2*sum(data['demand_el'])
+            variable_costs=3.4,
             investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92, maximum=0)
             # see BAU is investment in oil possible?;
             # in RE scenario it is not an investment object -> maximum = 0
@@ -207,12 +245,15 @@ pp_biomass = solph.components.Transformer(
     outputs={
         bel: solph.Flow(
             variable_costs=5,
-            investment=solph.Investment(ep_costs=epc_biomass, existing=112, maximum=1700)
+            investment=solph.Investment(ep_costs=epc_biomass/2, existing=112, maximum=1700)
+        ),
+        bheat: solph.Flow(
+            variable_costs=5,
+            investment=solph.Investment(ep_costs=epc_biomass/2, existing=112, maximum=1700)
         )
     },
-    conversion_factors={bel: 0.35},
+    conversion_factors={bel: 0.35, bheat: 0.35},
 )
-
 
 # Electrolyzer
 electrolyzer = solph.components.Transformer(
@@ -227,6 +268,7 @@ electrolyzer = solph.components.Transformer(
     conversion_factors={bel: 0.665},
 )
 
+
 # create storage object representing a battery
 battery_storage = solph.components.GenericStorage(
     label="battery",
@@ -234,7 +276,7 @@ battery_storage = solph.components.GenericStorage(
     outputs={bel: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
-    invest_relation_input_capacity=1, # counting rate;it is the relation of charge per time step to total capacity
+    invest_relation_input_capacity=1,
     invest_relation_output_capacity=1,
     inflow_conversion_factor=1,
     outflow_conversion_factor=0.9,
@@ -256,8 +298,61 @@ hydrogen_storage = solph.components.GenericStorage(
 )
 
 
-energysystem.add(excess, fuel_oil_resource, biomass_resource, wind, pv, hydro, demand_el, pp_fuel_oil, pp_biomass,
-                 battery_storage, electrolyzer, hydrogen_storage)
+# electric cooker
+cooker_el = solph.components.Transformer(
+    label="electric cooker",
+    inputs={bel: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_cooker_el)
+        )
+    },
+    conversion_factors={bcook: 0.665},
+)
+
+# unimproved stove
+
+stove_unimproved = solph.components.Transformer(
+    label="unimproved stove",
+    inputs={bbm: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_stove_unimproved)
+        )
+    },
+    conversion_factors={bcook: 0.2},
+)
+
+# improved stove
+stove_improved = solph.components.Transformer(
+    label="improved stove",
+    inputs={bbm: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_stove_improved)
+        )
+    },
+    conversion_factors={bcook: 0.5},
+)
+
+# LPG stove
+stove_lpg = solph.components.Transformer(
+    label="LPG stove",
+    inputs={blpg: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_lpg_stove)
+        )
+    },
+    conversion_factors={bcook: 0.5},
+)
+
+energysystem.add(excess, fuel_oil_resource, biomass_resource, lpg_resource, wind, pv, hydro, demand_el, pp_fuel_oil, pp_biomass,
+                 battery_storage, electrolyzer, hydrogen_storage, cooker_el, stove_unimproved, stove_improved, stove_lpg)
 
 ##########################################################################
 # Optimise the energy system
@@ -304,5 +399,3 @@ my_results["res_share"] = (
 )
 
 pp.pprint(my_results)
-
-#
