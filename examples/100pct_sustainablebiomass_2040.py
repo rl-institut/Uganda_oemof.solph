@@ -75,7 +75,6 @@ from oemof.tools import logger
 
 from oemof import solph
 
-
 # Read data file
 filename = os.path.join(os.getcwd(), "uganda_sequences.csv")
 

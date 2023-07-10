@@ -74,13 +74,17 @@ import pandas as pd
 from oemof.tools import logger
 
 from oemof import solph
+from oemof.solph import helpers
 
+# debug
+debug = True  # Set number_of_timesteps to 3 to get a readable lp-file.
+solver_verbose = False  # show/hide solver output
 
 # Read data file
 filename = os.path.join(os.getcwd(), "uganda_sequences.csv")
 
 data = pd.read_csv(filename)
-number_timesteps = len(data)
+number_timesteps = 3  # len(data)
 
 print(data)
 ##########################################################################
@@ -122,9 +126,6 @@ bel = solph.Bus(label="electricity")
 
 # create hydrogen bus
 bhg = solph.Bus(label='hydrogen_bus')
-
-# create heat bus
-# bheat = solph.Bus(label="heat")
 
 # create biogas bus
 bbm = solph.Bus(label='biomass_bus')
@@ -234,7 +235,7 @@ battery_storage = solph.components.GenericStorage(
     outputs={bel: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
-    invest_relation_input_capacity=1, # counting rate;it is the relation of charge per time step to total capacity
+    invest_relation_input_capacity=1,  # counting rate;it is the relation of charge per time step to total capacity
     invest_relation_output_capacity=1,
     inflow_conversion_factor=1,
     outflow_conversion_factor=0.9,
@@ -268,9 +269,20 @@ logging.info("Optimise the energy system")
 # initialise the operational model
 om = solph.Model(energysystem)
 
+# This is for debugging only. It is not(!) necessary to solve the problem
+# and should be set to False to save time and disc space in normal use. For
+# debugging the timesteps should be set to 3, to increase the readability
+# of the lp-file.
+filename = os.path.join(
+    helpers.extend_basic_path("lp_files"), "sustainablebiomass_2040_electric.lp"
+    )
+logging.info("Store lp-file in {0}.".format(filename))
+om.write(filename, io_options={"symbolic_solver_labels": True})
+
 # if tee_switch is true solver messages will be displayed
 logging.info("Solve the optimization problem")
 om.solve(solver="glpk", solve_kwargs={"tee": True})
+
 
 ##########################################################################
 # Check and plot the results
