@@ -4,7 +4,7 @@
 General description
 -------------------
 This example shows how to perform a capacity optimization for
-an energy system with storage. The following energy system is modeled:
+an energy system with storage. The following energy system is modeled (visualization not updated!)
 
 .. code-block:: text
 
@@ -27,18 +27,6 @@ an energy system with storage. The following energy system is modeled:
      storage(Storage)    |<------------------|
                          |------------------>|
 
-The example exists in four variations. The following parameters describe
-the main setting for the optimization variation 1:
-
-    - optimize wind, pv, gas_resource and storage
-    - set investment cost for wind, pv and storage
-    - set gas price for kWh
-
-    Results show an installation of wind and the use of the gas resource.
-    A renewable energy share of 51% is achieved.
-
-    Have a look at different parameter settings. There are four variations
-    of this example in the same folder.
 
 Data
 ----
@@ -82,6 +70,7 @@ data = pd.read_csv(filename)
 number_timesteps = len(data)
 
 print(data)
+
 ##########################################################################
 # Initialize the energy system and read/calculate necessary parameters
 ##########################################################################
@@ -115,6 +104,8 @@ epc_cooker_el = 10000
 epc_stove_unimproved = 1000
 epc_stove_improved = 4000
 epc_lpg_stove = 1000
+epc_combustion_engine_transport = 200000
+epc_electric_transport = 250000
 
 ##########################################################################
 # Create oemof objects
@@ -133,6 +124,9 @@ bhg = solph.Bus(label='hydrogen_bus')
 # create heat bus
 bheat = solph.Bus(label="heat_bus")
 
+# create transport bus
+btrans = solph.Bus(label="transport_bus")
+
 # create cooking bus
 bcook = solph.Bus(label="cooking_bus")
 
@@ -142,7 +136,7 @@ bbm = solph.Bus(label='biomass_bus')
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, bel, bbm, bheat, bcook, bhg, blpg)
+energysystem.add(bfuel, bel, bbm, bheat, btrans, bcook, bhg, blpg)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -296,10 +290,35 @@ hydrogen_storage = solph.components.GenericStorage(
     investment=solph.Investment(ep_costs=epc_hydrogen_storage),
 )
 
+# electric transport vehicles
+transport_el = solph.components.Transformer(
+    label="electric transport vehicles",
+    inputs={bel: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_electric_transport)
+        )
+    },
+    conversion_factors={btrans: 0.7},
+)
 
-# electric cooker
+# electric transport vehicles
+transport_ce = solph.components.Transformer(
+    label="combustion engine transport vehicles",
+    inputs={bfuel: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_combustion_engine_transport)
+        )
+    },
+    conversion_factors={btrans: 0.3},
+)
+
+# electric cookers
 cooker_el = solph.components.Transformer(
-    label="electric cooker",
+    label="electric cookers",
     inputs={bel: solph.Flow()},
     outputs={
         bcook: solph.Flow(
@@ -313,7 +332,7 @@ cooker_el = solph.components.Transformer(
 # unimproved stove
 
 stove_unimproved = solph.components.Transformer(
-    label="unimproved stove",
+    label="unimproved stoves",
     inputs={bbm: solph.Flow()},
     outputs={
         bcook: solph.Flow(
@@ -326,7 +345,7 @@ stove_unimproved = solph.components.Transformer(
 
 # improved stove
 stove_improved = solph.components.Transformer(
-    label="improved stove",
+    label="improved stoves",
     inputs={bbm: solph.Flow()},
     outputs={
         bcook: solph.Flow(
@@ -339,7 +358,7 @@ stove_improved = solph.components.Transformer(
 
 # LPG stove
 stove_lpg = solph.components.Transformer(
-    label="LPG stove",
+    label="LPG stoves",
     inputs={blpg: solph.Flow()},
     outputs={
         bcook: solph.Flow(
@@ -350,8 +369,9 @@ stove_lpg = solph.components.Transformer(
     conversion_factors={bcook: 0.5},
 )
 
-energysystem.add(excess, fuel_oil_resource, biomass_resource, lpg_resource, wind, pv, hydro, demand_el, pp_fuel_oil, pp_biomass,
-                 battery_storage, electrolyzer, hydrogen_storage, cooker_el, stove_unimproved, stove_improved, stove_lpg)
+energysystem.add(excess, fuel_oil_resource, biomass_resource, lpg_resource, wind, pv, hydro, demand_el, pp_fuel_oil,
+                 pp_biomass, battery_storage, electrolyzer, hydrogen_storage, transport_el, transport_ce, cooker_el,
+                 stove_unimproved, stove_improved, stove_lpg)
 
 ##########################################################################
 # Optimise the energy system
