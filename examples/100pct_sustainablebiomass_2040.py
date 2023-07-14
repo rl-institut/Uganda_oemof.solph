@@ -100,6 +100,7 @@ epc_hydrogen_storage = 3937.5
 epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
+epc_fuel_cell = 71750
 epc_cooker_el = 10000
 epc_stove_unimproved = 1000
 epc_stove_improved = 4000
@@ -130,7 +131,7 @@ btrans = solph.Bus(label="transport_bus")
 # create cooking bus
 bcook = solph.Bus(label="cooking_bus")
 
-# create biogas bus
+# create biomass bus
 bbm = solph.Bus(label='biomass_bus')
 
 # create lpg bus
@@ -159,7 +160,7 @@ fuel_oil_resource = solph.components.Source(
 biomass_resource = solph.components.Source(
     label="biomass", outputs={bbm: solph.Flow(variable_costs=price_biomass)}
 )
-
+# Begrenzung biomasse mit summed max
 # create source object representing lpg commodity
 lpg_resource = solph.components.Source(
     label="lpg", outputs={blpg: solph.Flow(variable_costs=price_lpg)}
@@ -221,7 +222,7 @@ pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
     inputs={bfuel: solph.Flow()},
     outputs={
-        bel: solph.Flow(
+        bel: solph.Flow(   #  full_load_time_min=8760,
             variable_costs=3.4,
             investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92, maximum=0)
             # see BAU is investment in oil possible?;
@@ -251,16 +252,28 @@ pp_biomass = solph.components.Transformer(
 # Electrolyzer
 electrolyzer = solph.components.Transformer(
     label="electrolyzer",
-    inputs={bhg: solph.Flow()},
+    inputs={bel: solph.Flow()},
     outputs={
-        bel: solph.Flow(
+        bhg: solph.Flow(
             variable_costs=0,
             investment=solph.Investment(ep_costs=epc_electrolyzer)
         )
     },
-    conversion_factors={bel: 0.665},
+    conversion_factors={bhg: 0.665},
 )
 
+# Fuel Cell
+fuel_cell = solph.components.Transformer(
+    label="fuel_cell",
+    inputs={bel: solph.Flow()},
+    outputs={
+        bhg: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_fuel_cell)
+        )
+    },
+    conversion_factors={bhg: 0.6},
+)
 
 # create storage object representing a battery
 battery_storage = solph.components.GenericStorage(
@@ -370,7 +383,7 @@ stove_lpg = solph.components.Transformer(
 )
 
 energysystem.add(excess, fuel_oil_resource, biomass_resource, lpg_resource, wind, pv, hydro, demand_el, pp_fuel_oil,
-                 pp_biomass, battery_storage, electrolyzer, hydrogen_storage, transport_el, transport_ce, cooker_el,
+                 pp_biomass, battery_storage, electrolyzer, fuel_cell, hydrogen_storage, transport_el, transport_ce, cooker_el,
                  stove_unimproved, stove_improved, stove_lpg)
 
 ##########################################################################
@@ -390,15 +403,18 @@ om.solve(solver="glpk", solve_kwargs={"tee": True})
 # Check and plot the results
 ##########################################################################
 
-# check if the new result object is working for custom components
+
 results = solph.processing.results(om)
 
 electricity_bus = solph.views.node(results, "electricity")
+cooking_bus = solph.views.node(results, "cooking_bus")
 
 meta_results = solph.processing.meta_results(om)
 pp.pprint(meta_results)
 
-my_results = electricity_bus["scalars"]
+electricity_scalars = electricity_bus["scalars"]
+cooking_scalars = cooking_bus["scalars"]
+my_results = pd.concat([electricity_scalars, cooking_scalars], axis=1)
 
 # installed capacity of storage in GWh
 my_results["storage_invest_GWh"] = (

@@ -112,12 +112,14 @@ epc_hydrogen_storage = 3937.5
 epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
+epc_fuel_cell = 71750
 
 ##########################################################################
 # Create oemof objects
 ##########################################################################
 
 logging.info("Create oemof objects")
+
 # create fuel oil bus
 bfuel = solph.Bus(label="fuel_oil_bus")
 
@@ -139,12 +141,14 @@ excess = solph.components.Sink(
 
 # create source object representing the fuel oil commodity
 fuel_oil_resource = solph.components.Source(
-    label="fuel_oil", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_fuel_oil)}
+    label="fuel_oil", outputs={bfuel: solph.Flow(fix=data["fuel_oil_usage"], nominal_value=92,
+                                                 variable_costs=price_fuel_oil)}
 )  # nominal value is set to 1 to model continuous operation of fuel oil power plant
 
 # create source object representing the biogas commodity
 biomass_resource = solph.components.Source(
-    label="biomass", outputs={bbm: solph.Flow(nominal_value=1, variable_costs=price_biomass)}
+    label="biomass", outputs={bbm: solph.Flow(fix=data["biomass_usage"], nominal_value=112,
+                                              variable_costs=price_biomass)}
 )  # nominal value is set to 1 to model continuous operation of fuel oil power plant
 
 # create fixed source object representing wind power plants
@@ -192,8 +196,8 @@ pp_fuel_oil = solph.components.Transformer(
     inputs={bfuel: solph.Flow()},
     outputs={
         bel: solph.Flow(
-            variable_costs=3.4,  # summed_max=0.2*sum(data['demand_el'])
-            investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92, maximum=0)
+            variable_costs=3.4  # summed_max=0.2*sum(data['demand_el'])
+
             # see BAU is investment in oil possible?;
             # in RE scenario it is not an investment object -> maximum = 0
         )
@@ -207,25 +211,36 @@ pp_biomass = solph.components.Transformer(
     inputs={bbm: solph.Flow()},
     outputs={
         bel: solph.Flow(
-            variable_costs=5,
-            investment=solph.Investment(ep_costs=epc_biomass, existing=112, maximum=1700)
+            variable_costs=5
         )
     },
     conversion_factors={bel: 0.35},
 )
 
-
 # Electrolyzer
 electrolyzer = solph.components.Transformer(
     label="electrolyzer",
-    inputs={bhg: solph.Flow()},
+    inputs={bel: solph.Flow()},
     outputs={
-        bel: solph.Flow(
+        bhg: solph.Flow(
             variable_costs=0,
             investment=solph.Investment(ep_costs=epc_electrolyzer)
         )
     },
-    conversion_factors={bel: 0.665},
+    conversion_factors={bhg: 0.665},
+)
+
+# Fuel Cell
+fuel_cell = solph.components.Transformer(
+    label="fuel_cell",
+    inputs={bel: solph.Flow()},
+    outputs={
+        bhg: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_fuel_cell)
+        )
+    },
+    conversion_factors={bhg: 0.6},
 )
 
 # create storage object representing a battery
@@ -258,7 +273,7 @@ hydrogen_storage = solph.components.GenericStorage(
 
 
 energysystem.add(excess, fuel_oil_resource, biomass_resource, wind, pv, hydro, demand_el, pp_fuel_oil, pp_biomass,
-                 battery_storage, electrolyzer, hydrogen_storage)
+                 battery_storage, electrolyzer, fuel_cell, hydrogen_storage)
 
 ##########################################################################
 # Optimise the energy system
