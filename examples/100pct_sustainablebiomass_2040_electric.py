@@ -84,7 +84,7 @@ solver_verbose = False  # show/hide solver output
 filename = os.path.join(os.getcwd(), "uganda_sequences.csv")
 
 data = pd.read_csv(filename)
-number_timesteps = 3  # len(data)
+number_timesteps = 24  # len(data)
 
 print(data)
 ##########################################################################
@@ -129,7 +129,7 @@ bel = solph.Bus(label="electricity")
 # create hydrogen bus
 bhg = solph.Bus(label='hydrogen_bus')
 
-# create biogas bus
+# create biomass bus
 bbm = solph.Bus(label='biomass_bus')
 
 energysystem.add(bfuel, bel, bbm, bhg)
@@ -233,14 +233,14 @@ electrolyzer = solph.components.Transformer(
 # Fuel Cell
 fuel_cell = solph.components.Transformer(
     label="fuel_cell",
-    inputs={bel: solph.Flow()},
+    inputs={bhg: solph.Flow()},
     outputs={
-        bhg: solph.Flow(
+        bel: solph.Flow(
             variable_costs=0,
             investment=solph.Investment(ep_costs=epc_fuel_cell)
         )
     },
-    conversion_factors={bhg: 0.6},
+    conversion_factors={bel: 0.6},
 )
 
 # create storage object representing a battery
@@ -298,7 +298,6 @@ om.write(filename, io_options={"symbolic_solver_labels": True})
 logging.info("Solve the optimization problem")
 om.solve(solver="glpk", solve_kwargs={"tee": True})
 
-
 ##########################################################################
 # Check and plot the results
 ##########################################################################
@@ -307,29 +306,37 @@ om.solve(solver="glpk", solve_kwargs={"tee": True})
 results = solph.processing.results(om)
 
 electricity_bus = solph.views.node(results, "electricity")
+biomass_bus = solph.views.node(results, "biomass_bus")
 
 meta_results = solph.processing.meta_results(om)
 pp.pprint(meta_results)
 
-my_results = electricity_bus["scalars"]
+scalars = electricity_bus["scalars"]
+sequences = electricity_bus["sequences"]
 
 # installed capacity of storage in GWh
-my_results["storage_invest_GWh"] = (
+scalars["storage_invest_GWh"] = (
         results[(battery_storage, None)]["scalars"]["invest"] / 1e6
 )
 
 # installed capacity of wind power plant in MW
-my_results["wind_invest_MW"] = (
+scalars["wind_invest_MW"] = (
         results[(wind, bel)]["scalars"]["invest"] / 1e3
 )
 
 # resulting renewable energy share
-my_results["res_share"] = (
+scalars["res_share"] = (
         1
         - results[(pp_fuel_oil, bel)]["sequences"].sum()
         / results[(bel, demand_el)]["sequences"].sum()
 )
 
-pp.pprint(my_results)
 
-#
+scalars["fuel_oil_use"] = results[(pp_fuel_oil, bel)]["sequences"].sum()
+scalars["biomass_use"] = results[(pp_biomass, bel)]["sequences"].sum()
+sequences["fuel_oil_use"] = results[(pp_fuel_oil, bel)]["sequences"]
+sequences["biomass_use"] = results[(pp_biomass, bel)]["sequences"]
+pp.pprint(scalars)
+print(sequences)
+sequences.to_csv('sequences.csv')
+scalars.to_csv('scalars_electric.csv')

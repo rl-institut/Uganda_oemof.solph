@@ -1,0 +1,24 @@
+,2021-01-01
+"(('battery', 'electricity'), 'invest')",21297.2828281856
+"(('battery', 'electricity'), 'total')",21297.2828281856
+"(('electricity', 'battery'), 'invest')",21297.2828281856
+"(('electricity', 'battery'), 'total')",21297.2828281856
+"(('fuel_cell', 'electricity'), 'invest')",-8.29389317750856e-13
+"(('fuel_cell', 'electricity'), 'total')",-8.29389317750856e-13
+"(('hydro', 'electricity'), 'invest')",1930.0
+"(('hydro', 'electricity'), 'total')",3000.0
+"(('pv', 'electricity'), 'invest')",4560.71819081214
+"(('pv', 'electricity'), 'total')",4620.71819081214
+"(('wind', 'electricity'), 'invest')",6163.37246951295
+"(('wind', 'electricity'), 'total')",6163.37246951295
+storage_invest_GWh,0.021297282828185597
+wind_invest_MW,6.16337246951295
+res_share,"variable_name
+flow    0.986651
+dtype: float64"
+fuel_oil_use,"variable_name
+flow    1280.64
+dtype: float64"
+biomass_use,"variable_name
+flow    940.8
+dtype: float64"

@@ -1,5 +1,6 @@
-name: myvenv
+name: Uganda_oemof.solph
+channels:
+  - conda-forge
 dependencies:
-- python=3.6
-- pip:
-   - -r requirements.txt
+- python=3.9
+- coincbc

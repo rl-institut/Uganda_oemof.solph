@@ -67,7 +67,7 @@ from oemof import solph
 filename = os.path.join(os.getcwd(), "uganda_sequences.csv")
 
 data = pd.read_csv(filename)
-number_timesteps = len(data)
+number_timesteps = 24  # len(data)
 
 print(data)
 
@@ -84,7 +84,7 @@ energysystem = solph.EnergySystem(
 
 price_fuel_oil = 37.9
 price_lpg = 50
-price_biomass = 1.042
+price_biomass = 1.042  # ask for different prices bagass e , biomass
 
 
 # fossil_share = 0.2, we can do maximum biomass use; or required res_share!
@@ -113,6 +113,7 @@ epc_electric_transport = 250000
 ##########################################################################
 
 logging.info("Create oemof objects")
+
 # create fuel oil bus
 bfuel = solph.Bus(label="fuel_oil_bus")
 
@@ -134,10 +135,13 @@ bcook = solph.Bus(label="cooking_bus")
 # create biomass bus
 bbm = solph.Bus(label='biomass_bus')
 
+# create bagasse bus
+bbg = solph.Bus(label='bagasse_bus')
+
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, bel, bbm, bheat, btrans, bcook, bhg, blpg)
+energysystem.add(bfuel, bel, bbm, bbg, bheat, btrans, bcook, bhg, blpg)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -156,10 +160,16 @@ fuel_oil_resource = solph.components.Source(
                 #full_load_time_max=1,
            #)
 
-# create source object representing the biogas commodity
+# create source object representing unsustainable biomass commodity
 biomass_resource = solph.components.Source(
     label="biomass", outputs={bbm: solph.Flow(variable_costs=price_biomass)}
 )
+
+# create source object representing sustainable biomass commodity
+bagasse_resource = solph.components.Source(
+    label="bagasse", outputs={bbg: solph.Flow(variable_costs=price_biomass)}
+)
+
 # Begrenzung biomasse mit summed max
 # create source object representing lpg commodity
 lpg_resource = solph.components.Source(
@@ -199,24 +209,6 @@ hydro = solph.components.Source(
     },
 )
 
-# create simple sink object representing the electrical demand
-demand_el = solph.components.Sink(
-    label="electricity demand",
-    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=40500000)},
-)
-
-# create simple sink object representing the heat demand
-demand_heat = solph.components.Sink(
-    label="heat demand",
-    inputs={bel: solph.Flow(fix=data["demand_heat"], nominal_value=40500000)},
-)
-
-# create simple sink object representing the cooking demand
-demand_cooking = solph.components.Sink(
-    label="cooking demand",
-    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
-)
-
 # create simple transformer object representing a fuel oil plant
 pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
@@ -232,10 +224,10 @@ pp_fuel_oil = solph.components.Transformer(
     conversion_factors={bel: 0.58},
 )
 
-# Biomass Heat and Power Cogeneration Plant
-pp_biomass = solph.components.Transformer(
-    label="pp_biomass",
-    inputs={bbm: solph.Flow()},
+# Bagasse Heat and Power Cogeneration Plant
+pp_bagasse = solph.components.Transformer(
+    label="pp_bagasse",
+    inputs={bbg: solph.Flow()},
     outputs={
         bel: solph.Flow(
             variable_costs=5,
@@ -265,14 +257,14 @@ electrolyzer = solph.components.Transformer(
 # Fuel Cell
 fuel_cell = solph.components.Transformer(
     label="fuel_cell",
-    inputs={bel: solph.Flow()},
+    inputs={bhg: solph.Flow()},
     outputs={
-        bhg: solph.Flow(
+        bel: solph.Flow(
             variable_costs=0,
             investment=solph.Investment(ep_costs=epc_fuel_cell)
         )
     },
-    conversion_factors={bhg: 0.6},
+    conversion_factors={bel: 0.6},
 )
 
 # create storage object representing a battery
@@ -308,7 +300,7 @@ transport_el = solph.components.Transformer(
     label="electric transport vehicles",
     inputs={bel: solph.Flow()},
     outputs={
-        bcook: solph.Flow(
+        btrans: solph.Flow(
             variable_costs=0,
             investment=solph.Investment(ep_costs=epc_electric_transport)
         )
@@ -321,7 +313,7 @@ transport_ce = solph.components.Transformer(
     label="combustion engine transport vehicles",
     inputs={bfuel: solph.Flow()},
     outputs={
-        bcook: solph.Flow(
+        btrans: solph.Flow(
             variable_costs=0,
             investment=solph.Investment(ep_costs=epc_combustion_engine_transport)
         )
@@ -382,9 +374,33 @@ stove_lpg = solph.components.Transformer(
     conversion_factors={bcook: 0.5},
 )
 
-energysystem.add(excess, fuel_oil_resource, biomass_resource, lpg_resource, wind, pv, hydro, demand_el, pp_fuel_oil,
-                 pp_biomass, battery_storage, electrolyzer, fuel_cell, hydrogen_storage, transport_el, transport_ce, cooker_el,
-                 stove_unimproved, stove_improved, stove_lpg)
+# create simple sink object representing the electrical demand
+demand_el = solph.components.Sink(
+    label="electricity demand",
+    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=40500000)},
+)
+
+# create simple sink object representing the heat demand
+demand_heat = solph.components.Sink(
+    label="heat demand",
+    inputs={bel: solph.Flow(fix=data["demand_heat"], nominal_value=40500000)},
+)
+
+# create simple sink object representing the cooking demand
+demand_cooking = solph.components.Sink(
+    label="cooking demand",
+    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+)
+
+demand_transport = solph.components.Sink(
+    label="transport demand",
+    inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+)
+
+# cooking demand, transport demand sinks!
+energysystem.add(excess, fuel_oil_resource, biomass_resource, bagasse_resource, lpg_resource, wind, pv, hydro, demand_el, demand_cooking,
+                 demand_transport, pp_fuel_oil, pp_bagasse, battery_storage, electrolyzer, fuel_cell, hydrogen_storage,
+                 transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg)
 
 ##########################################################################
 # Optimise the energy system
@@ -403,18 +419,21 @@ om.solve(solver="glpk", solve_kwargs={"tee": True})
 # Check and plot the results
 ##########################################################################
 
-
 results = solph.processing.results(om)
 
 electricity_bus = solph.views.node(results, "electricity")
+heat_bus = solph.views.node(results, "heat_bus")
 cooking_bus = solph.views.node(results, "cooking_bus")
+transport_bus = solph.views.node(results, "transport_bus")
 
 meta_results = solph.processing.meta_results(om)
 pp.pprint(meta_results)
 
 electricity_scalars = electricity_bus["scalars"]
+heat_scalars = heat_bus["scalars"]
 cooking_scalars = cooking_bus["scalars"]
-my_results = pd.concat([electricity_scalars, cooking_scalars], axis=1)
+transport_scalars = transport_bus["scalars"]
+my_results = pd.concat([electricity_scalars, heat_scalars, cooking_scalars, transport_scalars], axis=0)
 
 # installed capacity of storage in GWh
 my_results["storage_invest_GWh"] = (
@@ -434,3 +453,4 @@ my_results["res_share"] = (
 )
 
 pp.pprint(my_results)
+my_results.to_csv('scalars.csv')
