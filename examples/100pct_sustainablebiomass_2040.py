@@ -83,6 +83,7 @@ energysystem = solph.EnergySystem(
 )
 
 price_fuel_oil = 37.9
+price_kerosene = 55
 price_lpg = 50
 price_biomass = 1.042  # ask for different prices bagass e , biomass
 
@@ -107,6 +108,8 @@ epc_stove_improved = 4000
 epc_lpg_stove = 1000
 epc_combustion_engine_transport = 200000
 epc_electric_transport = 250000
+epc_aviation = 50000
+epc_shipping = 40000
 
 ##########################################################################
 # Create oemof objects
@@ -116,6 +119,9 @@ logging.info("Create oemof objects")
 
 # create fuel oil bus
 bfuel = solph.Bus(label="fuel_oil_bus")
+
+# create kerosene bus
+bks = solph.Bus(label="kerosene_bus")
 
 # create electricity bus
 bel = solph.Bus(label="electricity")
@@ -129,6 +135,12 @@ bheat = solph.Bus(label="heat_bus")
 # create transport bus
 btrans = solph.Bus(label="transport_bus")
 
+# create aviation bus
+bavia = solph.Bus(label="aviation_bus")
+
+# create shipping bus
+bship = solph.Bus(label="shipping_bus")
+
 # create cooking bus
 bcook = solph.Bus(label="cooking_bus")
 
@@ -141,7 +153,7 @@ bbg = solph.Bus(label='bagasse_bus')
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, bel, bbm, bbg, bheat, btrans, bcook, bhg, blpg)
+energysystem.add(bfuel, bel, bbm, bks, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -174,6 +186,10 @@ bagasse_resource = solph.components.Source(
 # create source object representing lpg commodity
 lpg_resource = solph.components.Source(
     label="lpg", outputs={blpg: solph.Flow(variable_costs=price_lpg)}
+)
+
+kerosene_resource = solph.components.Source(
+    label="kerosene", outputs={bks: solph.Flow(variable_costs=price_kerosene)}
 )
 
 # create fixed source object representing wind power plants
@@ -308,7 +324,7 @@ transport_el = solph.components.Transformer(
     conversion_factors={btrans: 0.7},
 )
 
-# electric transport vehicles
+# combustion engine transport vehicles
 transport_ce = solph.components.Transformer(
     label="combustion engine transport vehicles",
     inputs={bfuel: solph.Flow()},
@@ -321,6 +337,31 @@ transport_ce = solph.components.Transformer(
     conversion_factors={btrans: 0.3},
 )
 
+# airplanes
+aviation = solph.components.Transformer(
+    label="aviation",
+    inputs={bks: solph.Flow()},
+    outputs={
+        bavia: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_aviation)
+        )
+    },
+    conversion_factors={bavia: 0.7},
+)
+
+# shipping
+shipping = solph.components.Transformer(
+    label="shipping",
+    inputs={bfuel: solph.Flow()},
+    outputs={
+        btrans: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_shipping)
+        )
+    },
+    conversion_factors={btrans: 0.7},
+)
 # electric cookers
 cooker_el = solph.components.Transformer(
     label="electric cookers",
@@ -397,9 +438,19 @@ demand_transport = solph.components.Sink(
     inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
 )
 
+demand_aviation = solph.components.Sink(
+    label="aviation demand",
+    inputs={bavia: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+)
+
+demand_shipping = solph.components.Sink(
+    label="shipping demand",
+    inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+)
 # cooking demand, transport demand sinks!
-energysystem.add(excess, fuel_oil_resource, biomass_resource, bagasse_resource, lpg_resource, wind, pv, hydro, demand_el, demand_cooking,
-                 demand_transport, pp_fuel_oil, pp_bagasse, battery_storage, electrolyzer, fuel_cell, hydrogen_storage,
+energysystem.add(excess, fuel_oil_resource, biomass_resource, bagasse_resource, lpg_resource, kerosene_resource, wind,
+                 pv, hydro, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
+                 pp_bagasse, battery_storage, electrolyzer, fuel_cell, aviation, shipping, hydrogen_storage,
                  transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg)
 
 ##########################################################################
@@ -425,6 +476,8 @@ electricity_bus = solph.views.node(results, "electricity")
 heat_bus = solph.views.node(results, "heat_bus")
 cooking_bus = solph.views.node(results, "cooking_bus")
 transport_bus = solph.views.node(results, "transport_bus")
+aviation_bus = solph.views.node(results, "aviation_bus")
+shipping_bus = solph.views.node(results, "shipping_bus")
 
 meta_results = solph.processing.meta_results(om)
 pp.pprint(meta_results)
@@ -433,7 +486,10 @@ electricity_scalars = electricity_bus["scalars"]
 heat_scalars = heat_bus["scalars"]
 cooking_scalars = cooking_bus["scalars"]
 transport_scalars = transport_bus["scalars"]
-my_results = pd.concat([electricity_scalars, heat_scalars, cooking_scalars, transport_scalars], axis=0)
+aviation_scalars = aviation_bus["scalars"]
+#shipping_scalars = shipping_bus["scalars"]
+
+my_results = pd.concat([electricity_scalars, heat_scalars, cooking_scalars, transport_scalars, aviation_scalars], axis=0)
 
 # installed capacity of storage in GWh
 my_results["storage_invest_GWh"] = (

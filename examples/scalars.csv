@@ -1,8 +1,8 @@
 ,2021-01-01
-"(('battery', 'electricity'), 'invest')",189110.646139678
-"(('battery', 'electricity'), 'total')",189110.646139678
-"(('electricity', 'battery'), 'invest')",189110.646139678
-"(('electricity', 'battery'), 'total')",189110.646139678
+"(('battery', 'electricity'), 'invest')",287355.14966545
+"(('battery', 'electricity'), 'total')",287355.14966545
+"(('electricity', 'battery'), 'invest')",287355.14966545
+"(('electricity', 'battery'), 'total')",287355.14966545
 "(('fuel_cell', 'electricity'), 'invest')",-0.0
 "(('fuel_cell', 'electricity'), 'total')",0.0
 "(('hydro', 'electricity'), 'invest')",1930.0
@@ -11,26 +11,30 @@
 "(('pp_bagasse', 'electricity'), 'total')",112.0
 "(('pp_fuel_oil', 'electricity'), 'invest')",0.0
 "(('pp_fuel_oil', 'electricity'), 'total')",92.0
-"(('pv', 'electricity'), 'invest')",58042.7287243573
-"(('pv', 'electricity'), 'total')",58102.7287243573
-"(('wind', 'electricity'), 'invest')",43196.1413578209
-"(('wind', 'electricity'), 'total')",43196.1413578209
+"(('pv', 'electricity'), 'invest')",89373.1848605299
+"(('pv', 'electricity'), 'total')",89433.1848605299
+"(('wind', 'electricity'), 'invest')",64812.8657489944
+"(('wind', 'electricity'), 'total')",64812.8657489944
 "(('pp_bagasse', 'heat_bus'), 'invest')",0.0
 "(('pp_bagasse', 'heat_bus'), 'total')",112.0
-"(('LPG stoves', 'cooking_bus'), 'invest')",-0.0
-"(('LPG stoves', 'cooking_bus'), 'total')",0.0
+"(('LPG stoves', 'cooking_bus'), 'invest')",-8.49515316002044e-13
+"(('LPG stoves', 'cooking_bus'), 'total')",-8.49515316002044e-13
 "(('electric cookers', 'cooking_bus'), 'invest')",-0.0
 "(('electric cookers', 'cooking_bus'), 'total')",0.0
 "(('improved stoves', 'cooking_bus'), 'invest')",-0.0
 "(('improved stoves', 'cooking_bus'), 'total')",0.0
 "(('unimproved stoves', 'cooking_bus'), 'invest')",9458.36023376115
 "(('unimproved stoves', 'cooking_bus'), 'total')",9458.36023376115
-"(('combustion engine transport vehicles', 'transport_bus'), 'invest')",0.3
-"(('combustion engine transport vehicles', 'transport_bus'), 'total')",0.3
-"(('electric transport vehicles', 'transport_bus'), 'invest')",9458.06023376115
-"(('electric transport vehicles', 'transport_bus'), 'total')",9458.06023376115
-storage_invest_GWh,0.18911064613967798
-wind_invest_MW,43.196141357820906
+"(('combustion engine transport vehicles', 'transport_bus'), 'invest')",-0.0
+"(('combustion engine transport vehicles', 'transport_bus'), 'total')",0.0
+"(('electric transport vehicles', 'transport_bus'), 'invest')",18916.0204675223
+"(('electric transport vehicles', 'transport_bus'), 'total')",18916.0204675223
+"(('shipping', 'transport_bus'), 'invest')",0.7
+"(('shipping', 'transport_bus'), 'total')",0.7
+"(('aviation', 'aviation_bus'), 'invest')",9458.36023376115
+"(('aviation', 'aviation_bus'), 'total')",9458.36023376115
+storage_invest_GWh,0.28735514966545
+wind_invest_MW,64.8128657489944
 res_share,"variable_name
-flow    0.999861
+flow    1.0
 dtype: float64"
