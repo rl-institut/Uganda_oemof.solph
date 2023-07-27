@@ -103,6 +103,8 @@ epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
 epc_fuel_cell = 71750
 epc_cooker_el = 10000
+epc_biogas_heating = 10000
+epc_anaerobic_digester = 30000
 epc_stove_unimproved = 1000
 epc_stove_improved = 4000
 epc_lpg_stove = 1000
@@ -141,19 +143,22 @@ bavia = solph.Bus(label="aviation_bus")
 # create shipping bus
 bship = solph.Bus(label="shipping_bus")
 
-# create cooking bus
-bcook = solph.Bus(label="cooking_bus")
+# create biogas bus
+bbg = solph.Bus(label='biogas_bus')
 
 # create biomass bus
 bbm = solph.Bus(label='biomass_bus')
 
+# create cooking bus
+bcook = solph.Bus(label="cooking_bus")
+
 # create bagasse bus
-bbg = solph.Bus(label='bagasse_bus')
+bba = solph.Bus(label='bagasse_bus')
 
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, bel, bbm, bks, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg)
+energysystem.add(bfuel, bel, bbm, bks, bba, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -240,6 +245,30 @@ pp_fuel_oil = solph.components.Transformer(
     conversion_factors={bel: 0.58},
 )
 
+# Anaerobic Digester
+digester = solph.components.Transformer(
+    label="digester",
+    inputs={bbm: solph.Flow()},
+    outputs={
+        bbg: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_anaerobic_digester)
+        )
+    },
+    conversion_factors={bbg: 0.6},
+)
+# Biogas Heating Unit (Chick breeding)
+biogas_heating = solph.components.Transformer(
+    label="biogas heating",
+    inputs={bbg: solph.Flow()},
+    outputs={
+        bheat: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_biogas_heating)
+        )
+    },
+    conversion_factors={bheat: 0.9},
+)
 # Bagasse Heat and Power Cogeneration Plant
 pp_bagasse = solph.components.Transformer(
     label="pp_bagasse",
@@ -254,7 +283,7 @@ pp_bagasse = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_biomass/2, existing=112, maximum=1700)
         )
     },
-    conversion_factors={bel: 0.35, bheat: 0.35},
+    conversion_factors={bel: 0.35, bheat: 0.65},
 )
 
 # Electrolyzer
@@ -415,6 +444,19 @@ stove_lpg = solph.components.Transformer(
     conversion_factors={bcook: 0.5},
 )
 
+# Biogas Cooker
+stove_biogas = solph.components.Transformer(
+    label="biogas stoves",
+    inputs={bbg: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_lpg_stove)
+        )
+    },
+    conversion_factors={bcook: 0.5},
+)
+
 # create simple sink object representing the electrical demand
 demand_el = solph.components.Sink(
     label="electricity demand",
@@ -447,11 +489,13 @@ demand_shipping = solph.components.Sink(
     label="shipping demand",
     inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
 )
+
 # cooking demand, transport demand sinks!
 energysystem.add(excess, fuel_oil_resource, biomass_resource, bagasse_resource, lpg_resource, kerosene_resource, wind,
                  pv, hydro, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
-                 pp_bagasse, battery_storage, electrolyzer, fuel_cell, aviation, shipping, hydrogen_storage,
-                 transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg)
+                 pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation, shipping,
+                 hydrogen_storage,transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg,
+                 stove_biogas)
 
 ##########################################################################
 # Optimise the energy system
