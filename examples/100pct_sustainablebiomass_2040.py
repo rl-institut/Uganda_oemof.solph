@@ -143,6 +143,12 @@ bavia = solph.Bus(label="aviation_bus")
 # create shipping bus
 bship = solph.Bus(label="shipping_bus")
 
+# create woody biomass bus
+bwood = solph.Bus(label="woody_biomass_bus")
+
+# create organic waste bus
+borg = solph.Bus(label="organic_waste_bus")
+
 # create biogas bus
 bbg = solph.Bus(label='biogas_bus')
 
@@ -158,7 +164,7 @@ bba = solph.Bus(label='bagasse_bus')
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, bel, bbm, bks, bba, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg)
+energysystem.add(bfuel, bel, bwood, borg, bks, bba, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -178,14 +184,32 @@ fuel_oil_resource = solph.components.Source(
            #)
 
 # create source object representing unsustainable biomass commodity
-biomass_resource = solph.components.Source(
-    label="biomass", outputs={bbm: solph.Flow(variable_costs=price_biomass)}
+tree_biomass_resource = solph.components.Source(
+    label="tree biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 26.3 Million tons
 )
-
+bush_resource = solph.components.Source(
+    label="bush biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 10.5 Million tons
+)
+papyrus_resource = solph.components.Source(
+    label="papyrus biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 4.5 Million tons
+)
 # create source object representing sustainable biomass commodity
 bagasse_resource = solph.components.Source(
-    label="bagasse", outputs={bbg: solph.Flow(variable_costs=price_biomass)}
+    label="bagasse", outputs={bba: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 1.4 Million tons
 )
+
+vegetal_waste = solph.components.Source(
+    label="vegetal waste", outputs={borg: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 1.2 Million tons
+)
+
+animal_waste = solph.components.Source(
+    label="animal waste", outputs={borg: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 1 Million tons
+)
+
+human_waste = solph.components.Source(
+    label="human waste", outputs={borg: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 1 Million tons
+)
+
 
 # Begrenzung biomasse mit summed max
 # create source object representing lpg commodity
@@ -248,7 +272,7 @@ pp_fuel_oil = solph.components.Transformer(
 # Anaerobic Digester
 digester = solph.components.Transformer(
     label="digester",
-    inputs={bbm: solph.Flow()},
+    inputs={borg: solph.Flow()},
     outputs={
         bbg: solph.Flow(
             variable_costs=0,
@@ -272,7 +296,7 @@ biogas_heating = solph.components.Transformer(
 # Bagasse Heat and Power Cogeneration Plant
 pp_bagasse = solph.components.Transformer(
     label="pp_bagasse",
-    inputs={bbg: solph.Flow()},
+    inputs={bba: solph.Flow()},
     outputs={
         bel: solph.Flow(
             variable_costs=5,
@@ -391,6 +415,14 @@ shipping = solph.components.Transformer(
     },
     conversion_factors={btrans: 0.7},
 )
+# infinite and free storage biomass
+# infinite and free storage kerosene
+# infinite and free storage fuel oil
+# infinite and free storage
+# infinite and free storage biomass
+# infinite and free storage biomass
+# infinite and free storage biomass
+# infinite and free storage biomass
 # electric cookers
 cooker_el = solph.components.Transformer(
     label="electric cookers",
@@ -408,7 +440,7 @@ cooker_el = solph.components.Transformer(
 
 stove_unimproved = solph.components.Transformer(
     label="unimproved stoves",
-    inputs={bbm: solph.Flow()},
+    inputs={bwood: solph.Flow()},
     outputs={
         bcook: solph.Flow(
             variable_costs=0,
@@ -421,7 +453,7 @@ stove_unimproved = solph.components.Transformer(
 # improved stove
 stove_improved = solph.components.Transformer(
     label="improved stoves",
-    inputs={bbm: solph.Flow()},
+    inputs={bwood: solph.Flow()},
     outputs={
         bcook: solph.Flow(
             variable_costs=0,
@@ -491,10 +523,11 @@ demand_shipping = solph.components.Sink(
 )
 
 # cooking demand, transport demand sinks!
-energysystem.add(excess, fuel_oil_resource, biomass_resource, bagasse_resource, lpg_resource, kerosene_resource, wind,
+energysystem.add(excess, fuel_oil_resource, tree_biomass_resource, bush_resource, papyrus_resource, vegetal_waste,
+                 animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
                  pv, hydro, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
                  pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation, shipping,
-                 hydrogen_storage,transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg,
+                 hydrogen_storage, transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg,
                  stove_biogas)
 
 ##########################################################################

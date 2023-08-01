@@ -11,24 +11,24 @@
 "(('pp_bagasse', 'electricity'), 'total')",112.0
 "(('pp_fuel_oil', 'electricity'), 'invest')",0.0
 "(('pp_fuel_oil', 'electricity'), 'total')",92.0
-"(('pv', 'electricity'), 'invest')",89373.1848605298
-"(('pv', 'electricity'), 'total')",89433.1848605298
+"(('pv', 'electricity'), 'invest')",89373.1848605299
+"(('pv', 'electricity'), 'total')",89433.1848605299
 "(('wind', 'electricity'), 'invest')",64812.8657489944
 "(('wind', 'electricity'), 'total')",64812.8657489944
 "(('biogas heating', 'heat_bus'), 'invest')",0.0
 "(('biogas heating', 'heat_bus'), 'total')",0.0
 "(('pp_bagasse', 'heat_bus'), 'invest')",0.0
 "(('pp_bagasse', 'heat_bus'), 'total')",112.0
-"(('LPG stoves', 'cooking_bus'), 'invest')",-0.0
-"(('LPG stoves', 'cooking_bus'), 'total')",0.0
-"(('biogas stoves', 'cooking_bus'), 'invest')",9458.36023376115
-"(('biogas stoves', 'cooking_bus'), 'total')",9458.36023376115
+"(('LPG stoves', 'cooking_bus'), 'invest')",-1.39974003750543e-12
+"(('LPG stoves', 'cooking_bus'), 'total')",-1.39974003750543e-12
+"(('biogas stoves', 'cooking_bus'), 'invest')",-0.0
+"(('biogas stoves', 'cooking_bus'), 'total')",0.0
 "(('electric cookers', 'cooking_bus'), 'invest')",-0.0
 "(('electric cookers', 'cooking_bus'), 'total')",0.0
 "(('improved stoves', 'cooking_bus'), 'invest')",-0.0
 "(('improved stoves', 'cooking_bus'), 'total')",0.0
-"(('unimproved stoves', 'cooking_bus'), 'invest')",-0.0
-"(('unimproved stoves', 'cooking_bus'), 'total')",0.0
+"(('unimproved stoves', 'cooking_bus'), 'invest')",9458.36023376115
+"(('unimproved stoves', 'cooking_bus'), 'total')",9458.36023376115
 "(('combustion engine transport vehicles', 'transport_bus'), 'invest')",-0.0
 "(('combustion engine transport vehicles', 'transport_bus'), 'total')",0.0
 "(('electric transport vehicles', 'transport_bus'), 'invest')",18916.0204675223
