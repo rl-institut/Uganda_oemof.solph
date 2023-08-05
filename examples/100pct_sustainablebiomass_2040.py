@@ -152,9 +152,6 @@ borg = solph.Bus(label="organic_waste_bus")
 # create biogas bus
 bbg = solph.Bus(label='biogas_bus')
 
-# create biomass bus
-bbm = solph.Bus(label='biomass_bus')
-
 # create cooking bus
 bcook = solph.Bus(label="cooking_bus")
 
@@ -164,7 +161,7 @@ bba = solph.Bus(label='bagasse_bus')
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, bel, bwood, borg, bks, bba, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg)
+energysystem.add(bfuel, bel, bwood, borg, bks, bba, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg, bwood)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -175,7 +172,7 @@ excess = solph.components.Sink(
 fuel_oil_resource = solph.components.Source(
     label="fuel_oil", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_fuel_oil)}
 )  # nominal value is set to 1 to model continuous operation of fuel oil power plant
-                # ominal_value=fossil_share
+                # nominal_value=fossil_share
                 #* consumption_total
                 #/ 0.58
                 #* number_timesteps
@@ -415,15 +412,74 @@ shipping = solph.components.Transformer(
     },
     conversion_factors={btrans: 0.7},
 )
-# infinite and free storage biomass
+
+infinite_wood_storage = solph.components.GenericStorage(
+    label="infinite biomass storage",
+    inputs={bwood: solph.Flow(variable_costs=0)},
+    outputs={bwood: solph.Flow()},
+    loss_rate=0.00,
+    initial_storage_level=0,
+    invest_relation_input_capacity=1,
+    invest_relation_output_capacity=1,
+    inflow_conversion_factor=1,
+    outflow_conversion_factor=1,
+    investment=solph.Investment(ep_costs=0),
+)
+
 # infinite and free storage kerosene
+infinite_kerosene_storage = solph.components.GenericStorage(
+    label="infinite kerosene storage",
+    inputs={bks: solph.Flow(variable_costs=0)},
+    outputs={bks: solph.Flow()},
+    loss_rate=0.00,
+    initial_storage_level=0,
+    invest_relation_input_capacity=1,
+    invest_relation_output_capacity=1,
+    inflow_conversion_factor=1,
+    outflow_conversion_factor=1,
+    investment=solph.Investment(ep_costs=0),
+)
+
 # infinite and free storage fuel oil
-# infinite and free storage
-# infinite and free storage biomass
-# infinite and free storage biomass
-# infinite and free storage biomass
-# infinite and free storage biomass
-# electric cookers
+infinite_fuel_storage = solph.components.GenericStorage(
+    label="infinite fuel oil storage",
+    inputs={bks: solph.Flow(variable_costs=0)},
+    outputs={bks: solph.Flow()},
+    loss_rate=0.00,
+    initial_storage_level=0,
+    invest_relation_input_capacity=1,
+    invest_relation_output_capacity=1,
+    inflow_conversion_factor=1,
+    outflow_conversion_factor=1,
+    investment=solph.Investment(ep_costs=0),
+)
+# infinite and free storage lpg
+infinite_lpg_storage = solph.components.GenericStorage(
+    label="infinite lpg storage",
+    inputs={blpg: solph.Flow(variable_costs=0)},
+    outputs={blpg: solph.Flow()},
+    loss_rate=0.00,
+    initial_storage_level=0,
+    invest_relation_input_capacity=1,
+    invest_relation_output_capacity=1,
+    inflow_conversion_factor=1,
+    outflow_conversion_factor=1,
+    investment=solph.Investment(ep_costs=0),
+)
+# infinite and free storage biogas
+infinite_biogas_storage = solph.components.GenericStorage(
+    label="infinite biogas storage",
+    inputs={bbg: solph.Flow(variable_costs=0)},
+    outputs={bbg: solph.Flow()},
+    loss_rate=0.00,
+    initial_storage_level=0,
+    invest_relation_input_capacity=1,
+    invest_relation_output_capacity=1,
+    inflow_conversion_factor=1,
+    outflow_conversion_factor=1,
+    investment=solph.Investment(ep_costs=0),
+)
+
 cooker_el = solph.components.Transformer(
     label="electric cookers",
     inputs={bel: solph.Flow()},
@@ -528,7 +584,8 @@ energysystem.add(excess, fuel_oil_resource, tree_biomass_resource, bush_resource
                  pv, hydro, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
                  pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation, shipping,
                  hydrogen_storage, transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg,
-                 stove_biogas)
+                 stove_biogas, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
+                 infinite_fuel_storage, infinite_biogas_storage)
 
 ##########################################################################
 # Optimise the energy system

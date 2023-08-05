@@ -19,8 +19,8 @@
 "(('biogas heating', 'heat_bus'), 'total')",0.0
 "(('pp_bagasse', 'heat_bus'), 'invest')",0.0
 "(('pp_bagasse', 'heat_bus'), 'total')",112.0
-"(('LPG stoves', 'cooking_bus'), 'invest')",-1.39974003750543e-12
-"(('LPG stoves', 'cooking_bus'), 'total')",-1.39974003750543e-12
+"(('LPG stoves', 'cooking_bus'), 'invest')",1.7766796936404e-13
+"(('LPG stoves', 'cooking_bus'), 'total')",1.7766796936404e-13
 "(('biogas stoves', 'cooking_bus'), 'invest')",-0.0
 "(('biogas stoves', 'cooking_bus'), 'total')",0.0
 "(('electric cookers', 'cooking_bus'), 'invest')",-0.0
