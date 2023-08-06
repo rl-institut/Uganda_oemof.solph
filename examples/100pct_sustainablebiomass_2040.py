@@ -101,6 +101,7 @@ epc_hydrogen_storage = 3937.5
 epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
+epc_geothermal = 400000
 epc_fuel_cell = 71750
 epc_cooker_el = 10000
 epc_biogas_heating = 10000
@@ -108,8 +109,9 @@ epc_anaerobic_digester = 30000
 epc_stove_unimproved = 1000
 epc_stove_improved = 4000
 epc_lpg_stove = 1000
-epc_combustion_engine_transport = 200000
+epc_combustion_engine_transport = 20000
 epc_electric_transport = 250000
+epc_hydrogen_transport = 40000
 epc_aviation = 50000
 epc_shipping = 40000
 
@@ -251,6 +253,18 @@ hydro = solph.components.Source(
     },
 )
 
+# create fixed source object representing geothermal power plants
+geothermal = solph.components.Source(
+    label="geothermal",
+    outputs={
+        bel: solph.Flow(
+            variable_costs=30,
+            investment=solph.Investment(ep_costs=epc_geothermal, maximum=1500)  # in total the
+            # maximum hydro potential is 3000 MW, please verify
+        )
+    },
+)
+
 # create simple transformer object representing a fuel oil plant
 pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
@@ -387,6 +401,18 @@ transport_ce = solph.components.Transformer(
     conversion_factors={btrans: 0.3},
 )
 
+# hydrogen vehicles
+transport_hg = solph.components.Transformer(
+    label="hydrogen vehicles",
+    inputs={bhg: solph.Flow()},
+    outputs={
+        btrans: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_hydrogen_transport)
+        )
+    },
+    conversion_factors={btrans: 0.3},
+)
 # airplanes
 aviation = solph.components.Transformer(
     label="aviation",
@@ -581,9 +607,9 @@ demand_shipping = solph.components.Sink(
 # cooking demand, transport demand sinks!
 energysystem.add(excess, fuel_oil_resource, tree_biomass_resource, bush_resource, papyrus_resource, vegetal_waste,
                  animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
-                 pv, hydro, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
+                 pv, hydro, geothermal, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
                  pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation, shipping,
-                 hydrogen_storage, transport_el, transport_ce, cooker_el, stove_unimproved, stove_improved, stove_lpg,
+                 hydrogen_storage, transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
                  stove_biogas, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
                  infinite_fuel_storage, infinite_biogas_storage)
 
