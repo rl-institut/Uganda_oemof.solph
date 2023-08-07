@@ -83,6 +83,7 @@ energysystem = solph.EnergySystem(
 )
 
 price_fuel_oil = 37.9
+price_biofuel = 25
 price_kerosene = 55
 price_lpg = 50
 price_biomass = 1.042  # ask for different prices bagass e , biomass
@@ -92,7 +93,7 @@ price_biomass = 1.042  # ask for different prices bagass e , biomass
 
 # If the period is one year the equivalent periodical costs (epc) of an
 # investment are equal to the annuity. Use oemof's economic tools.
-# EPC per MW installed
+# EPC per MW installed as present value annual payments
 epc_wind = 138172.5  # calculated before model; formula: economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_pv = 90345  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_hydro = 247500  # economics.annuity(capex=1000, n=20, wacc=0.05)
@@ -121,8 +122,8 @@ epc_shipping = 40000
 
 logging.info("Create oemof objects")
 
-# create fuel oil bus
-bfuel = solph.Bus(label="fuel_oil_bus")
+# create fuel bus
+bfuel = solph.Bus(label="fuel_bus")
 
 # create kerosene bus
 bks = solph.Bus(label="kerosene_bus")
@@ -181,7 +182,10 @@ fuel_oil_resource = solph.components.Source(
                 #/ 8760,
                 #full_load_time_max=1,
            #)
-
+# create biofuel source object
+biofuel_resource = solph.components.Source(
+    label="biofuel", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_biofuel)}
+)
 # create source object representing unsustainable biomass commodity
 tree_biomass_resource = solph.components.Source(
     label="tree biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 26.3 Million tons
@@ -605,7 +609,7 @@ demand_shipping = solph.components.Sink(
 )
 
 # cooking demand, transport demand sinks!
-energysystem.add(excess, fuel_oil_resource, tree_biomass_resource, bush_resource, papyrus_resource, vegetal_waste,
+energysystem.add(excess, fuel_oil_resource, biofuel_resource, tree_biomass_resource, bush_resource, papyrus_resource, vegetal_waste,
                  animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
                  pv, hydro, geothermal, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
                  pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation, shipping,
@@ -632,6 +636,7 @@ om.solve(solver="glpk", solve_kwargs={"tee": True})
 
 results = solph.processing.results(om)
 
+#fuel_bus = solph.views.node(results, "fuel_bus")
 electricity_bus = solph.views.node(results, "electricity")
 heat_bus = solph.views.node(results, "heat_bus")
 cooking_bus = solph.views.node(results, "cooking_bus")
@@ -642,6 +647,7 @@ shipping_bus = solph.views.node(results, "shipping_bus")
 meta_results = solph.processing.meta_results(om)
 pp.pprint(meta_results)
 
+#fuel_scalars = fuel_bus["scalars"] # create sum of sequences to see used fossil fuel and biofuel...
 electricity_scalars = electricity_bus["scalars"]
 heat_scalars = heat_bus["scalars"]
 cooking_scalars = cooking_bus["scalars"]
