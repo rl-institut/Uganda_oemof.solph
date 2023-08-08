@@ -69,8 +69,7 @@ filename = os.path.join(os.getcwd(), "uganda_sequences.csv")
 data = pd.read_csv(filename)
 number_timesteps = 24  # len(data)
 
-print(data)
-
+print(data.head())
 ##########################################################################
 # Initialize the energy system and read/calculate necessary parameters
 ##########################################################################
@@ -430,19 +429,6 @@ aviation = solph.components.Transformer(
     conversion_factors={bavia: 0.7},
 )
 
-# shipping
-shipping = solph.components.Transformer(
-    label="shipping",
-    inputs={bfuel: solph.Flow()},
-    outputs={
-        btrans: solph.Flow(
-            variable_costs=0,
-            investment=solph.Investment(ep_costs=epc_shipping)
-        )
-    },
-    conversion_factors={btrans: 0.7},
-)
-
 infinite_wood_storage = solph.components.GenericStorage(
     label="infinite biomass storage",
     inputs={bwood: solph.Flow(variable_costs=0)},
@@ -603,16 +589,11 @@ demand_aviation = solph.components.Sink(
     inputs={bavia: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
 )
 
-demand_shipping = solph.components.Sink(
-    label="shipping demand",
-    inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
-)
-
 # cooking demand, transport demand sinks!
 energysystem.add(excess, fuel_oil_resource, biofuel_resource, tree_biomass_resource, bush_resource, papyrus_resource, vegetal_waste,
                  animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
-                 pv, hydro, geothermal, demand_el, demand_cooking, demand_transport, demand_aviation, demand_shipping, pp_fuel_oil,
-                 pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation, shipping,
+                 pv, hydro, geothermal, demand_el, demand_cooking, demand_transport, demand_aviation, pp_fuel_oil,
+                 pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation,
                  hydrogen_storage, transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
                  stove_biogas, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
                  infinite_fuel_storage, infinite_biogas_storage)
