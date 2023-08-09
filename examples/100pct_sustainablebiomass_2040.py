@@ -80,12 +80,14 @@ date_time_index = solph.create_time_index(2021, number=number_timesteps)
 energysystem = solph.EnergySystem(
     timeindex=date_time_index, infer_last_interval=False
 )
-
-price_fuel_oil = 37.9
-price_biofuel = 25
-price_kerosene = 55
-price_lpg = 50
-price_biomass = 1.042  # ask for different prices bagass e , biomass
+# Energy Prices Uganda 2023 [$/MWh lower heating value]
+price_fuel_oil = 88.9
+price_biofuel = 64.1
+price_kerosene = 99.8
+price_lpg = 25.46
+price_biomass = 7.2
+price_bagasse = 4.44
+price_peat = 2.78
 
 
 # fossil_share = 0.2, we can do maximum biomass use; or required res_share!
@@ -93,27 +95,28 @@ price_biomass = 1.042  # ask for different prices bagass e , biomass
 # If the period is one year the equivalent periodical costs (epc) of an
 # investment are equal to the annuity. Use oemof's economic tools.
 # EPC per MW installed as present value annual payments
-epc_wind = 138172.5  # calculated before model; formula: economics.annuity(capex=1000, n=20, wacc=0.05)
-epc_pv = 90345  # economics.annuity(capex=1000, n=20, wacc=0.05)
-epc_hydro = 247500  # economics.annuity(capex=1000, n=20, wacc=0.05)
-epc_battery = 21812.5  # economics.annuity(capex=1000, n=20, wacc=0.05)
+epc_wind = 138172.5  # calculated before model; formula: economics.annuity (n=20, wacc=0.05)
+epc_pv = 90345  # economics.annuity (n=20, wacc=0.05)
+epc_hydro = 247500  # economics.annuity (n=20, wacc=0.05)
+epc_battery = 21812.5  # economics.annuity (n=20, wacc=0.05)
 epc_hydrogen_storage = 3937.5
 epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
-epc_geothermal = 400000
+epc_geothermal = 330000
 epc_fuel_cell = 71750
-epc_cooker_el = 10000
-epc_biogas_heating = 10000
-epc_anaerobic_digester = 30000
-epc_stove_unimproved = 1000
-epc_stove_improved = 4000
-epc_lpg_stove = 1000
-epc_combustion_engine_transport = 20000
-epc_electric_transport = 250000
-epc_hydrogen_transport = 40000
-epc_aviation = 50000
-epc_shipping = 40000
+epc_cooker_el = 830
+epc_biogas_heating = 3209
+epc_industrial_boiler = 11000
+epc_anaerobic_digester = 4437.5
+epc_stove_unimproved = 52.5
+epc_stove_improved = 262.5
+epc_lpg_stove = 1300
+epc_combustion_engine_transport = 13937.5
+epc_electric_transport = 20500
+epc_hydrogen_transport = 17875
+epc_aviation = 650687.5
+
 
 ##########################################################################
 # Create oemof objects
@@ -197,7 +200,7 @@ papyrus_resource = solph.components.Source(
 )
 # create source object representing sustainable biomass commodity
 bagasse_resource = solph.components.Source(
-    label="bagasse", outputs={bba: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 1.4 Million tons
+    label="bagasse", outputs={bba: solph.Flow(variable_costs=price_bagasse)} #sustainable harvest 1.4 Million tons
 )
 
 vegetal_waste = solph.components.Source(
@@ -293,7 +296,7 @@ digester = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_anaerobic_digester)
         )
     },
-    conversion_factors={bbg: 0.6},
+    conversion_factors={bbg: 0.55},
 )
 # Biogas Heating Unit (Chick breeding)
 biogas_heating = solph.components.Transformer(
@@ -305,7 +308,20 @@ biogas_heating = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_biogas_heating)
         )
     },
-    conversion_factors={bheat: 0.9},
+    conversion_factors={bheat: 0.6},
+)
+
+# Industrial Boiler
+industrial_boiler = solph.components.Transformer(
+    label="industrial boiler",
+    inputs={bfuel: solph.Flow()},
+    outputs={
+        bheat: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_industrial_boiler)
+        )
+    },
+    conversion_factors={bheat: 0.6},
 )
 # Bagasse Heat and Power Cogeneration Plant
 pp_bagasse = solph.components.Transformer(
@@ -505,7 +521,7 @@ cooker_el = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_cooker_el)
         )
     },
-    conversion_factors={bcook: 0.665},
+    conversion_factors={bcook: 0.8},
 )
 
 # unimproved stove
@@ -519,7 +535,7 @@ stove_unimproved = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_stove_unimproved)
         )
     },
-    conversion_factors={bcook: 0.2},
+    conversion_factors={bcook: 0.135},
 )
 
 # improved stove
@@ -532,7 +548,7 @@ stove_improved = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_stove_improved)
         )
     },
-    conversion_factors={bcook: 0.5},
+    conversion_factors={bcook: 0.325},
 )
 
 # LPG stove
@@ -558,42 +574,42 @@ stove_biogas = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_lpg_stove)
         )
     },
-    conversion_factors={bcook: 0.5},
+    conversion_factors={bcook: 0.6},
 )
 
 # create simple sink object representing the electrical demand
 demand_el = solph.components.Sink(
     label="electricity demand",
-    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=40500000)},
+    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=4168)},
 )
 
 # create simple sink object representing the heat demand
 demand_heat = solph.components.Sink(
     label="heat demand",
-    inputs={bel: solph.Flow(fix=data["demand_heat"], nominal_value=40500000)},
+    inputs={bheat: solph.Flow(fix=data["demand_heat"], nominal_value=2908)},
 )
 
 # create simple sink object representing the cooking demand
 demand_cooking = solph.components.Sink(
     label="cooking demand",
-    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=38387)},
 )
 
 demand_transport = solph.components.Sink(
     label="transport demand",
-    inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+    inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=3990)},
 )
 
 demand_aviation = solph.components.Sink(
     label="aviation demand",
-    inputs={bavia: solph.Flow(fix=data["demand_cooking"], nominal_value=40500000)},
+    inputs={bavia: solph.Flow(fix=data["demand_cooking"], nominal_value=154.0)},
 )
 
 # cooking demand, transport demand sinks!
 energysystem.add(excess, fuel_oil_resource, biofuel_resource, tree_biomass_resource, bush_resource, papyrus_resource, vegetal_waste,
                  animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
                  pv, hydro, geothermal, demand_el, demand_cooking, demand_transport, demand_aviation, pp_fuel_oil,
-                 pp_bagasse, biogas_heating, digester, battery_storage, electrolyzer, fuel_cell, aviation,
+                 pp_bagasse, biogas_heating, industrial_boiler, digester, battery_storage, electrolyzer, fuel_cell, aviation,
                  hydrogen_storage, transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
                  stove_biogas, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
                  infinite_fuel_storage, infinite_biogas_storage)
