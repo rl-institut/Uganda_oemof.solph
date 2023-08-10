@@ -13,26 +13,26 @@
 "(('pp_bagasse', 'electricity'), 'total')",254.24
 "(('pp_fuel_oil', 'electricity'), 'invest')",0.0
 "(('pp_fuel_oil', 'electricity'), 'total')",92.0
-"(('pv', 'electricity'), 'invest')",357.86914323369
-"(('pv', 'electricity'), 'total')",417.86914323369
-"(('wind', 'electricity'), 'invest')",226.023087973265
-"(('wind', 'electricity'), 'total')",226.023087973265
+"(('pv', 'electricity'), 'invest')",357.869143233689
+"(('pv', 'electricity'), 'total')",417.869143233689
+"(('wind', 'electricity'), 'invest')",226.023087973264
+"(('wind', 'electricity'), 'total')",226.023087973264
 "(('biogas heating', 'heat_bus'), 'invest')",2435.84
 "(('biogas heating', 'heat_bus'), 'total')",2435.84
-"(('industrial boiler', 'heat_bus'), 'invest')",1.54322742380658e-12
-"(('industrial boiler', 'heat_bus'), 'total')",1.54322742380658e-12
+"(('industrial boiler', 'heat_bus'), 'invest')",-0.0
+"(('industrial boiler', 'heat_bus'), 'total')",0.0
 "(('pp_bagasse', 'heat_bus'), 'invest')",360.16
 "(('pp_bagasse', 'heat_bus'), 'total')",472.16
 "(('LPG stoves', 'cooking_bus'), 'invest')",15613.45
 "(('LPG stoves', 'cooking_bus'), 'total')",15613.45
 "(('biogas stoves', 'cooking_bus'), 'invest')",-0.0
 "(('biogas stoves', 'cooking_bus'), 'total')",0.0
-"(('electric cookers', 'cooking_bus'), 'invest')",2.8751538070816e-12
-"(('electric cookers', 'cooking_bus'), 'total')",2.8751538070816e-12
+"(('electric cookers', 'cooking_bus'), 'invest')",-0.0
+"(('electric cookers', 'cooking_bus'), 'total')",0.0
 "(('improved stoves', 'cooking_bus'), 'invest')",22773.55
 "(('improved stoves', 'cooking_bus'), 'total')",22773.55
-"(('unimproved stoves', 'cooking_bus'), 'invest')",1.04430668853986e-12
-"(('unimproved stoves', 'cooking_bus'), 'total')",1.04430668853986e-12
+"(('unimproved stoves', 'cooking_bus'), 'invest')",-0.0
+"(('unimproved stoves', 'cooking_bus'), 'total')",0.0
 "(('combustion engine transport vehicles', 'transport_bus'), 'invest')",-0.0
 "(('combustion engine transport vehicles', 'transport_bus'), 'total')",0.0
 "(('electric transport vehicles', 'transport_bus'), 'invest')",3990.0
@@ -42,7 +42,7 @@
 "(('aviation', 'aviation_bus'), 'invest')",154.0
 "(('aviation', 'aviation_bus'), 'total')",154.0
 storage_invest_GWh,0.00550178909851212
-wind_invest_MW,0.226023087973265
+wind_invest_MW,0.226023087973264
 res_share,"variable_name
 flow    0.999816
 dtype: float64"

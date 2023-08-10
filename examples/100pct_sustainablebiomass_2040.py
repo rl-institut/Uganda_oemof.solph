@@ -651,8 +651,14 @@ transport_scalars = transport_bus["scalars"]
 aviation_scalars = aviation_bus["scalars"]
 #shipping_scalars = shipping_bus["scalars"]
 
-my_results = pd.concat([electricity_scalars, heat_scalars, cooking_scalars, transport_scalars, aviation_scalars], axis=0)
+electricity_sequences = electricity_bus["sequences"]
+heat_sequences = heat_bus["sequences"]
+cooking_sequences = cooking_bus["sequences"]
+transport_sequences = transport_bus["sequences"]
+aviation_sequences = aviation_bus["sequences"]
 
+my_results = pd.concat([electricity_scalars, heat_scalars, cooking_scalars, transport_scalars, aviation_scalars], axis=0)
+sequences = pd.concat([electricity_sequences, heat_sequences, cooking_sequences, transport_sequences, aviation_sequences], axis=1)
 # installed capacity of storage in GWh
 my_results["storage_invest_GWh"] = (
         results[(battery_storage, None)]["scalars"]["invest"] / 1e6
@@ -672,3 +678,4 @@ my_results["res_share"] = (
 
 pp.pprint(my_results)
 my_results.to_csv('scalars.csv')
+sequences.to_csv('sequences.csv')
