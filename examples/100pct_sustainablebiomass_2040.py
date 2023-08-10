@@ -188,19 +188,19 @@ fuel_oil_resource = solph.components.Source(
 biofuel_resource = solph.components.Source(
     label="biofuel", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_biofuel)}
 )
-# create source object representing unsustainable biomass commodity
+# create source object representing tree biomass commodity
 tree_biomass_resource = solph.components.Source(
-    label="tree biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 26.3 Million tons
+    label="tree biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass, nominal_value=1, max=6455)}
 )
 bush_resource = solph.components.Source(
-    label="bush biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 10.5 Million tons
+    label="bush biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass, nominal_value=1, max=2577)}
 )
 papyrus_resource = solph.components.Source(
-    label="papyrus biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 4.5 Million tons
+    label="papyrus biomass", outputs={bwood: solph.Flow(variable_costs=price_biomass, nominal_value=1, max=1104)}
 )
 # create source object representing sustainable biomass commodity
 bagasse_resource = solph.components.Source(
-    label="bagasse", outputs={bba: solph.Flow(variable_costs=price_bagasse)} #sustainable harvest 1.4 Million tons
+    label="bagasse", outputs={bba: solph.Flow(variable_costs=price_bagasse, nominal_value=1, max=726.4)}
 )
 
 vegetal_waste = solph.components.Source(
@@ -214,7 +214,6 @@ animal_waste = solph.components.Source(
 human_waste = solph.components.Source(
     label="human waste", outputs={borg: solph.Flow(variable_costs=price_biomass)} #sustainable harvest 1 Million tons
 )
-
 
 # Begrenzung biomasse mit summed max
 # create source object representing lpg commodity
