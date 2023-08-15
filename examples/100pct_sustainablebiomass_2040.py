@@ -89,7 +89,10 @@ price_biomass = 7.2
 price_bagasse = 4.44
 price_peat = 2.78
 
-
+# sustainable biomass limits (MWh)
+tree_biomass_limit = 282272500
+bush_biomass_limit = 11287500
+papyrus_biomass_limit = 4837500
 # fossil_share = 0.2, we can do maximum biomass use; or required res_share!
 
 # If the period is one year the equivalent periodical costs (epc) of an
@@ -277,7 +280,7 @@ pp_fuel_oil = solph.components.Transformer(
     outputs={
         bel: solph.Flow(   #  full_load_time_min=8760,
             variable_costs=3.4,
-            investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92, maximum=0)
+            investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92)
             # see BAU is investment in oil possible?;
             # in RE scenario it is not an investment object -> maximum = 0
         )
@@ -596,7 +599,7 @@ demand_cooking = solph.components.Sink(
 
 demand_transport = solph.components.Sink(
     label="transport demand",
-    inputs={btrans: solph.Flow(fix=data["demand_cooking"], nominal_value=3990)},
+    inputs={btrans: solph.Flow(fix=data["demand_transport"], nominal_value=3990)},
 )
 
 demand_aviation = solph.components.Sink(
@@ -669,11 +672,53 @@ my_results["wind_invest_MW"] = (
         results[(wind, bel)]["scalars"]["invest"] / 1e3
 )
 
+print(results[(bcook, demand_cooking)]["sequences"].sum)
 # resulting renewable energy share
+tree_usage = results[(tree_biomass_resource, bwood)]["sequences"].sum()
+float_tree_usage = float(tree_usage.iloc[0])
+bush_usage = results[(tree_biomass_resource, bwood)]["sequences"].sum()
+float_bush_usage = float(tree_usage.iloc[0])
+papyrus_usage = results[(papyrus_resource, bwood)]["sequences"].sum()
+float_papyrus_usage = float(papyrus_usage.iloc[0])
+
+if float_tree_usage > tree_biomass_limit:
+    unsustainable_tree_biomass = float_tree_usage - tree_biomass_limit
+else:
+    unsustainable_tree_biomass = 0
+if float_bush_usage > bush_biomass_limit:
+    unsustainable_bush_biomass = float_bush_usage - bush_biomass_limit
+else:
+    unsustainable_bush_biomass = 0
+if float_papyrus_usage > bush_biomass_limit:
+    unsustainable_papyrus_biomass = float_papyrus_usage - papyrus_biomass_limit
+else:
+    unsustainable_papyrus_biomass = 0
+
+unsustainable_biomass = unsustainable_tree_biomass + unsustainable_bush_biomass + unsustainable_papyrus_biomass
+total_woody_biomass = float_tree_usage + float_bush_usage + float_papyrus_usage
+my_results["unsustainable_biomass"] = unsustainable_biomass
+my_results["total_woody_biomass"] = total_woody_biomass
+effective_end_use_stove_improved = results[(stove_improved, bcook)]["sequences"].sum()
+effective_end_use_stove_unimproved = results[(stove_unimproved, bcook)]["sequences"].sum()
+my_results["effective_end_use_stove_improved"] = effective_end_use_stove_improved
+my_results["effective_end_use_stove_unimproved"] = effective_end_use_stove_unimproved
+non_renewable_biomass_cooking =unsustainable_biomass/total_woody_biomass *\
+                               (effective_end_use_stove_unimproved+effective_end_use_stove_improved)
+my_results["non_renewable_biomass_cooking"] = non_renewable_biomass_cooking
 my_results["res_share"] = (
         1
-        - results[(pp_fuel_oil, bel)]["sequences"].sum()
-        / results[(bel, demand_el)]["sequences"].sum()
+        - (results[(pp_fuel_oil, bel)]["sequences"].sum()
+        + results[(stove_lpg, bcook)]["sequences"].sum()
+        + results[(transport_ce, btrans)]["sequences"].sum()
+        + results[(aviation, bavia)]["sequences"].sum()
+        + non_renewable_biomass_cooking)
+        / (results[(bel, demand_el)]["sequences"].sum()
+        + results[(bcook, demand_cooking)]["sequences"].sum()
+        + results[(btrans, demand_transport)]["sequences"].sum()
+        + results[(bheat, demand_heat)]["sequences"].sum()
+        + results[(bavia, demand_aviation)]["sequences"].sum()
+        + results[(bcook, demand_cooking)]["sequences"].sum()
+           )
 )
 
 pp.pprint(my_results)
