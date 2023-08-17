@@ -643,6 +643,17 @@ energysystem.add(excess, fuel_oil_resource, uranium_resource, biofuel_resource, 
                  infinite_fuel_storage, infinite_biogas_storage)
 
 ##########################################################################
+### Visualize the energy system
+##########################################################################
+
+import graphviz
+from oemof_visio import ESGraphRenderer
+            
+os.environ["PATH"] += os.pathsep + 'C:/Program Files/Graphviz/bin/'
+gr = ESGraphRenderer(energy_system=energysystem, filepath="energy_system_100pct_sb_2040", img_format="png")
+gr.view()
+
+##########################################################################
 # Optimise the energy system
 ##########################################################################
 
