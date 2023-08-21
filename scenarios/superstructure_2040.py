@@ -114,10 +114,12 @@ epc_fuel_cell = 71750
 epc_cooker_el = 830
 epc_biogas_heating = 3209
 epc_industrial_boiler = 11000
+epc_wood_boiler = 4000
 epc_anaerobic_digester = 4437.5
 epc_stove_unimproved = 52.5
 epc_stove_improved = 262.5
 epc_lpg_stove = 1300
+epc_ethanol_stove = 1000
 epc_combustion_engine_transport = 13937.5
 epc_electric_transport = 20500
 epc_hydrogen_transport = 17875
@@ -132,6 +134,9 @@ logging.info("Create oemof objects")
 
 # create fuel bus
 bfuel = solph.Bus(label="fuel_bus")
+
+# create biofuel bus
+bbfuel = solph.Bus(label="biofuel_bus")
 
 # create uran bus
 buran = solph.Bus(label="uranium_bus")
@@ -175,7 +180,7 @@ bba = solph.Bus(label='bagasse_bus')
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, buran, bel, bwood, borg, bks, bba, bbg, bheat, btrans, bavia, bship, bcook, bhg, blpg, bwood)
+energysystem.add(bfuel, bbfuel, buran, bel, borg, bks, bba, bbg, bheat, btrans, bavia, bcook, bhg, blpg, bwood)
 
 # create excess component for the electricity bus to allow overproduction
 excess = solph.components.Sink(
@@ -195,7 +200,7 @@ fuel_oil_resource = solph.components.Source(
            #)
 # create biofuel source object
 biofuel_resource = solph.components.Source(
-    label="biofuel", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_biofuel)}
+    label="biofuel", outputs={bbfuel: solph.Flow(nominal_value=1, variable_costs=price_biofuel)}
 )
 
 # uranium resource
@@ -298,6 +303,16 @@ pp_nuclear = solph.components.Transformer(
     conversion_factors={bel: 0.33}
 )
 
+blender_biofuel = solph.components.Transformer(
+    label="blender_biofuel",
+    inputs={bbfuel: solph.Flow()},
+    outputs={
+        bfuel: solph.Flow(
+            variable_costs=0.1,
+            investment=solph.Investment(ep_costs=0, existing=0)
+        )
+    })
+
 # create simple transformer object representing a fuel oil plant
 pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
@@ -350,6 +365,20 @@ industrial_boiler = solph.components.Transformer(
     },
     conversion_factors={bheat: 0.6},
 )
+
+# Woody Biomass Boiler
+wood_boiler = solph.components.Transformer(
+    label="wood boiler",
+    inputs={bwood: solph.Flow()},
+    outputs={
+        bheat: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_wood_boiler)
+        )
+    },
+    conversion_factors={bheat: 0.5},
+)
+
 # Bagasse Heat and Power Cogeneration Plant
 pp_bagasse = solph.components.Transformer(
     label="pp_bagasse",
@@ -502,8 +531,8 @@ infinite_kerosene_storage = solph.components.GenericStorage(
 # infinite and free storage fuel oil
 infinite_fuel_storage = solph.components.GenericStorage(
     label="infinite fuel oil storage",
-    inputs={bks: solph.Flow(variable_costs=0)},
-    outputs={bks: solph.Flow()},
+    inputs={bfuel: solph.Flow(variable_costs=0)},
+    outputs={bfuel: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
     invest_relation_input_capacity=1,
@@ -605,6 +634,18 @@ stove_biogas = solph.components.Transformer(
     conversion_factors={bcook: 0.6},
 )
 
+# Ethanol cooker
+stove_ethanol = solph.components.Transformer(
+    label="ethanol stoves",
+    inputs={bbfuel: solph.Flow()},
+    outputs={
+        bcook: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_ethanol_stove)
+        )
+    },
+    conversion_factors={bcook: 0.55},
+)
 # create simple sink object representing the electrical demand
 demand_el = solph.components.Sink(
     label="electricity demand",
@@ -634,13 +675,13 @@ demand_aviation = solph.components.Sink(
 )
 
 # cooking demand, transport demand sinks!
-energysystem.add(excess, fuel_oil_resource, uranium_resource, biofuel_resource, tree_biomass_resource, bush_resource, papyrus_resource, vegetal_waste,
-                 animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
+energysystem.add(excess, fuel_oil_resource, uranium_resource, biofuel_resource, tree_biomass_resource, bush_resource,
+                 papyrus_resource, vegetal_waste,animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
                  pv, hydro, geothermal, demand_el, demand_cooking, demand_transport, demand_aviation, pp_fuel_oil, pp_nuclear,
                  pp_bagasse, biogas_heating, industrial_boiler, digester, battery_storage, electrolyzer, fuel_cell, aviation,
                  hydrogen_storage, transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
-                 stove_biogas, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
-                 infinite_fuel_storage, infinite_biogas_storage)
+                 stove_biogas, stove_ethanol, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
+                 infinite_fuel_storage, infinite_biogas_storage, blender_biofuel, wood_boiler)
 
 ##########################################################################
 ### Visualize the energy system
@@ -650,7 +691,7 @@ import graphviz
 from oemof_visio import ESGraphRenderer
             
 os.environ["PATH"] += os.pathsep + 'C:/Program Files/Graphviz/bin/'
-gr = ESGraphRenderer(energy_system=energysystem, filepath="energy_system_100pct_sb_2040", img_format="png")
+gr = ESGraphRenderer(energy_system=energysystem, filepath="superstructure_2040", img_format="png")
 gr.view()
 
 ##########################################################################
@@ -678,7 +719,6 @@ heat_bus = solph.views.node(results, "heat_bus")
 cooking_bus = solph.views.node(results, "cooking_bus")
 transport_bus = solph.views.node(results, "transport_bus")
 aviation_bus = solph.views.node(results, "aviation_bus")
-shipping_bus = solph.views.node(results, "shipping_bus")
 
 meta_results = solph.processing.meta_results(om)
 pp.pprint(meta_results)

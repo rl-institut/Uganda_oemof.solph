@@ -1,0 +1,244 @@
+digraph {
+	fuel_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	biofuel_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	uranium_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	electricity [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	organic_waste_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	kerosene_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	bagasse_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	biogas_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	heat_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	transport_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	aviation_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	cooking_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	hydrogen_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	lpg_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	woody_biomass_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	excess_bel [fontsize=10 shape=trapezium]
+	fuel_oil [fontsize=10 shape=invtrapezium]
+	uranium [fontsize=10 shape=invtrapezium]
+	biofuel [fontsize=10 shape=invtrapezium]
+	"tree bioma
+ss" [fontsize=10 shape=invtrapezium]
+	"bush bioma
+ss" [fontsize=10 shape=invtrapezium]
+	"papyrus bi
+omass" [fontsize=10 shape=invtrapezium]
+	"vegetal wa
+ste" [fontsize=10 shape=invtrapezium]
+	"animal was
+te" [fontsize=10 shape=invtrapezium]
+	"human wast
+e" [fontsize=10 shape=invtrapezium]
+	bagasse [fontsize=10 shape=invtrapezium]
+	lpg [fontsize=10 shape=invtrapezium]
+	kerosene [fontsize=10 shape=invtrapezium]
+	wind [fontsize=10 shape=invtrapezium]
+	pv [fontsize=10 shape=invtrapezium]
+	hydro [fontsize=10 shape=invtrapezium]
+	geothermal [fontsize=10 shape=invtrapezium]
+	"electricit
+y demand" [fontsize=10 shape=trapezium]
+	"cooking de
+mand" [fontsize=10 shape=trapezium]
+	"transport 
+demand" [fontsize=10 shape=trapezium]
+	"aviation d
+emand" [fontsize=10 shape=trapezium]
+	"pp_fuel_oi
+l" [fontsize=10 shape=rectangle]
+	pp_nuclear [fontsize=10 shape=rectangle]
+	pp_bagasse [fontsize=10 shape=rectangle]
+	"biogas hea
+ting" [fontsize=10 shape=rectangle]
+	"industrial
+ boiler" [fontsize=10 shape=rectangle]
+	digester [fontsize=10 shape=rectangle]
+	battery [fontsize=10 shape=rectangle style=rounded]
+	"electrolyz
+er" [fontsize=10 shape=rectangle]
+	fuel_cell [fontsize=10 shape=rectangle]
+	aviation [fontsize=10 shape=rectangle]
+	"hydrogen_s
+torage" [fontsize=10 shape=rectangle style=rounded]
+	"electric t
+ransport v
+ehicles" [fontsize=10 shape=rectangle]
+	"combustion
+ engine tr
+ansport ve
+hicles" [fontsize=10 shape=rectangle]
+	"hydrogen v
+ehicles" [fontsize=10 shape=rectangle]
+	"electric c
+ookers" [fontsize=10 shape=rectangle]
+	"unimproved
+ stoves" [fontsize=10 shape=rectangle]
+	"improved s
+toves" [fontsize=10 shape=rectangle]
+	"LPG stoves" [fontsize=10 shape=rectangle]
+	"biogas sto
+ves" [fontsize=10 shape=rectangle]
+	"ethanol st
+oves" [fontsize=10 shape=rectangle]
+	"infinite b
+iomass sto
+rage" [fontsize=10 shape=rectangle style=rounded]
+	"infinite k
+erosene st
+orage" [fontsize=10 shape=rectangle style=rounded]
+	"infinite l
+pg storage" [fontsize=10 shape=rectangle style=rounded]
+	"infinite f
+uel oil st
+orage" [fontsize=10 shape=rectangle style=rounded]
+	"infinite b
+iogas stor
+age" [fontsize=10 shape=rectangle style=rounded]
+	"blender_bi
+ofuel" [fontsize=10 shape=rectangle]
+	"wood boile
+r" [fontsize=10 shape=rectangle]
+	fuel_oil -> fuel_bus
+	"blender_bi
+ofuel" -> fuel_bus
+	"infinite f
+uel oil st
+orage" -> fuel_bus
+	fuel_bus -> "pp_fuel_oi
+l"
+	fuel_bus -> "industrial
+ boiler"
+	fuel_bus -> "combustion
+ engine tr
+ansport ve
+hicles"
+	fuel_bus -> "infinite f
+uel oil st
+orage"
+	biofuel -> biofuel_bus
+	biofuel_bus -> "blender_bi
+ofuel"
+	biofuel_bus -> "ethanol st
+oves"
+	uranium -> uranium_bus
+	uranium_bus -> pp_nuclear
+	geothermal -> electricity
+	battery -> electricity
+	pp_bagasse -> electricity
+	hydro -> electricity
+	pv -> electricity
+	wind -> electricity
+	pp_nuclear -> electricity
+	fuel_cell -> electricity
+	"pp_fuel_oi
+l" -> electricity
+	electricity -> excess_bel
+	electricity -> "electrolyz
+er"
+	electricity -> battery
+	electricity -> "electric t
+ransport v
+ehicles"
+	electricity -> "electric c
+ookers"
+	electricity -> "electricit
+y demand"
+	"animal was
+te" -> organic_waste_bus
+	"human wast
+e" -> organic_waste_bus
+	"vegetal wa
+ste" -> organic_waste_bus
+	organic_waste_bus -> digester
+	kerosene -> kerosene_bus
+	"infinite k
+erosene st
+orage" -> kerosene_bus
+	kerosene_bus -> aviation
+	kerosene_bus -> "infinite k
+erosene st
+orage"
+	bagasse -> bagasse_bus
+	bagasse_bus -> pp_bagasse
+	digester -> biogas_bus
+	"infinite b
+iogas stor
+age" -> biogas_bus
+	biogas_bus -> "biogas hea
+ting"
+	biogas_bus -> "infinite b
+iogas stor
+age"
+	biogas_bus -> "biogas sto
+ves"
+	"wood boile
+r" -> heat_bus
+	"biogas hea
+ting" -> heat_bus
+	pp_bagasse -> heat_bus
+	"industrial
+ boiler" -> heat_bus
+	heat_bus -> "heat deman
+d"
+	"hydrogen v
+ehicles" -> transport_bus
+	"combustion
+ engine tr
+ansport ve
+hicles" -> transport_bus
+	"electric t
+ransport v
+ehicles" -> transport_bus
+	transport_bus -> "transport 
+demand"
+	aviation -> aviation_bus
+	aviation_bus -> "aviation d
+emand"
+	"unimproved
+ stoves" -> cooking_bus
+	"electric c
+ookers" -> cooking_bus
+	"ethanol st
+oves" -> cooking_bus
+	"biogas sto
+ves" -> cooking_bus
+	"improved s
+toves" -> cooking_bus
+	"LPG stoves" -> cooking_bus
+	cooking_bus -> "cooking de
+mand"
+	"electrolyz
+er" -> hydrogen_bus
+	"hydrogen_s
+torage" -> hydrogen_bus
+	hydrogen_bus -> fuel_cell
+	hydrogen_bus -> "hydrogen_s
+torage"
+	hydrogen_bus -> "hydrogen v
+ehicles"
+	lpg -> lpg_bus
+	"infinite l
+pg storage" -> lpg_bus
+	lpg_bus -> "infinite l
+pg storage"
+	lpg_bus -> "LPG stoves"
+	"papyrus bi
+omass" -> woody_biomass_bus
+	"infinite b
+iomass sto
+rage" -> woody_biomass_bus
+	"bush bioma
+ss" -> woody_biomass_bus
+	"tree bioma
+ss" -> woody_biomass_bus
+	woody_biomass_bus -> "wood boile
+r"
+	woody_biomass_bus -> "infinite b
+iomass sto
+rage"
+	woody_biomass_bus -> "unimproved
+ stoves"
+	woody_biomass_bus -> "improved s
+toves"
+}
