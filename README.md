@@ -7,6 +7,8 @@ The currently supported Python Version are 3.8.8, 3.8.9 and 3.8.10. For using Ug
 
 Further, you need to install a solver in your system. To do so, please see the [oemof.solph documentation](https://oemof-solph.readthedocs.io/en/latest/readme.html)
 
+For running the visualization of the energy model superstructure you must install graphviz and add the path to the bin file in the environment variables. You can download graphviz [here](https://www.graphviz.org/download/).
+
 ## Documentation
 
 Documentation is currenty done in README files.
