@@ -1,34 +1,32 @@
 ,2021-01-01
-"(('battery', 'electricity'), 'invest')",11461.5179643669
-"(('electricity', 'battery'), 'invest')",11461.5179643669
+"(('battery', 'electricity'), 'invest')",14171.0756771521
+"(('electricity', 'battery'), 'invest')",14171.0756771521
 "(('fuel_cell', 'electricity'), 'invest')",0.0
 "(('geothermal', 'electricity'), 'invest')",1500.0
 "(('hydro', 'electricity'), 'invest')",1930.0
-"(('pp_bagasse', 'electricity'), 'invest')",142.24
 "(('pp_fuel_oil', 'electricity'), 'invest')",0.0
 "(('pp_nuclear', 'electricity'), 'invest')",0.33
 "(('pv', 'electricity'), 'invest')",0.0
-"(('wind', 'electricity'), 'invest')",13404.3728754847
-"(('biogas heating', 'heat_bus'), 'invest')",4.5009048054655e-13
+"(('wind', 'electricity'), 'invest')",14064.0047773252
+"(('biogas heating', 'heat_bus'), 'invest')",1.20170978102657e-12
 "(('industrial boiler', 'heat_bus'), 'invest')",0.0
-"(('pp_bagasse', 'heat_bus'), 'invest')",360.16
-"(('wood boiler', 'heat_bus'), 'invest')",2435.84
-"(('LPG stoves', 'cooking_bus'), 'invest')",20817.3029166332
-"(('biogas stoves', 'cooking_bus'), 'invest')",0.0
-"(('electric cookers', 'cooking_bus'), 'invest')",5593.36908336681
+"(('wood boiler', 'heat_bus'), 'invest')",2835.2
+"(('LPG stoves', 'cooking_bus'), 'invest')",23692.9883768423
+"(('biogas stoves', 'cooking_bus'), 'invest')",-2.4261068307996e-27
+"(('electric cookers', 'cooking_bus'), 'invest')",4534.77162315766
 "(('ethanol stoves', 'cooking_bus'), 'invest')",0.0
-"(('improved stoves', 'cooking_bus'), 'invest')",11976.328
+"(('improved stoves', 'cooking_bus'), 'invest')",10159.24
 "(('unimproved stoves', 'cooking_bus'), 'invest')",0.0
 "(('combustion engine transport vehicles', 'transport_bus'), 'invest')",0.0
 "(('electric transport vehicles', 'transport_bus'), 'invest')",3990.0
-"(('hydrogen vehicles', 'transport_bus'), 'invest')",692.329207751975
+"(('hydrogen vehicles', 'transport_bus'), 'invest')",496.746712181176
 "(('aviation', 'aviation_bus'), 'invest')",154.0
-storage_invest_GWh,0.0114615179643669
-wind_invest_MW,13.4043728754847
+storage_invest_GWh,0.0141710756771521
+wind_invest_MW,14.0640047773252
 unsustainable_biomass_MWh,0.0
-total_woody_biomass_MWh,322420.07999999996
+total_woody_biomass_MWh,328243.7384615385
 effective_end_use_stove_improved,"variable_name
-flow    35386.201
+flow    30454.105
 dtype: float64"
 effective_end_use_stove_unimproved,"variable_name
 flow    0.0
@@ -37,5 +35,5 @@ non_renewable_biomass_cooking,"variable_name
 flow    0.0
 dtype: float64"
 res_share_effective_end_use_energy,"variable_name
-flow    0.832223
+flow    0.808508
 dtype: float64"

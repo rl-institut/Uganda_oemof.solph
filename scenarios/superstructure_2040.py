@@ -272,7 +272,7 @@ hydro = solph.components.Source(
         bel: solph.Flow(
             fix=data["hydro"], variable_costs=3,
             investment=solph.Investment(ep_costs=epc_hydro, existing=1070, maximum=1930)  # in total the
-            # maximum hydro potential is 3000 MW, please verify
+            # maximum sustainable hydro potential is set to 3000 MW, in business as usual to 4500 MW (Uganda Vision)
         )
     },
 )
@@ -284,7 +284,7 @@ geothermal = solph.components.Source(
         bel: solph.Flow(
             variable_costs=30,
             investment=solph.Investment(ep_costs=epc_geothermal, maximum=1500)  # in total the
-            # maximum geothermal potential is 1500 MW, please verify
+            # maximum geothermal potential is 1500 MW
         )
     },
 )
@@ -382,16 +382,13 @@ wood_boiler = solph.components.Transformer(
 # Bagasse Heat and Power Cogeneration Plant
 pp_bagasse = solph.components.Transformer(
     label="pp_bagasse",
-    inputs={bba: solph.Flow()},
+    inputs={bba: solph.Flow(
+        variable_costs=5,
+        investment=solph.Investment(ep_costs=epc_biomass, existing=112, maximum=1592)
+    )},
     outputs={
-        bel: solph.Flow(
-            variable_costs=5,
-            investment=solph.Investment(ep_costs=epc_biomass/2, existing=112, maximum=1700)
-        ),
-        bheat: solph.Flow(
-            variable_costs=5,
-            investment=solph.Investment(ep_costs=epc_biomass/2, existing=112, maximum=1700)
-        )
+        bel: solph.Flow(),
+        bheat: solph.Flow()
     },
     conversion_factors={bel: 0.35, bheat: 0.65},
 )
@@ -432,7 +429,7 @@ battery_storage = solph.components.GenericStorage(
     invest_relation_input_capacity=1,
     invest_relation_output_capacity=1,
     inflow_conversion_factor=1,
-    outflow_conversion_factor=0.9,
+    outflow_conversion_factor=0.86,
     investment=solph.Investment(ep_costs=epc_battery),
 )
 
@@ -498,7 +495,7 @@ aviation = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_aviation)
         )
     },
-    conversion_factors={bavia: 0.7},
+    conversion_factors={bavia: 0.3},
 )
 
 infinite_wood_storage = solph.components.GenericStorage(
@@ -631,7 +628,7 @@ stove_biogas = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_lpg_stove)
         )
     },
-    conversion_factors={bcook: 0.6},
+    conversion_factors={bcook: 0.5},
 )
 
 # Ethanol cooker
@@ -644,7 +641,7 @@ stove_ethanol = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_ethanol_stove)
         )
     },
-    conversion_factors={bcook: 0.55},
+    conversion_factors={bcook: 0.45},
 )
 # create simple sink object representing the electrical demand
 demand_el = solph.components.Sink(
@@ -671,7 +668,7 @@ demand_transport = solph.components.Sink(
 
 demand_aviation = solph.components.Sink(
     label="aviation demand",
-    inputs={bavia: solph.Flow(fix=data["demand_cooking"], nominal_value=154.0)},
+    inputs={bavia: solph.Flow(fix=data["demand_aviation"], nominal_value=154.0)},
 )
 
 # cooking demand, transport demand sinks!
@@ -795,7 +792,6 @@ my_results["res_share_effective_end_use_energy"] = (
         + results[(btrans, demand_transport)]["sequences"].sum()
         + results[(bheat, demand_heat)]["sequences"].sum()
         + results[(bavia, demand_aviation)]["sequences"].sum()
-        + results[(bcook, demand_cooking)]["sequences"].sum()
            )
 )
 
