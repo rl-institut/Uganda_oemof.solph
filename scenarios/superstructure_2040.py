@@ -3,29 +3,9 @@
 """
 General description
 -------------------
-This example shows how to perform a capacity optimization for
-an energy system with storage. The following energy system is modeled (visualization not updated!, see superstructure)
-
-.. code-block:: text
-
-                    input/output  bgas     bel
-                         |          |        |
-                         |          |        |
-     wind(FixedSource)   |------------------>|
-                         |          |        |
-     pv(FixedSource)     |------------------>|
-                         |          |        |
-     gas_resource        |--------->|        |
-     (Commodity)         |          |        |
-                         |          |        |
-     demand(Sink)        |<------------------|
-                         |          |        |
-                         |          |        |
-     pp_gas(Transformer) |<---------|        |
-                         |------------------>|
-                         |          |        |
-     storage(Storage)    |<------------------|
-                         |------------------>|
+Superstructure for Uganda Energy System. The superstructure includes all resources, power plants, vehicles,
+ cooking devices which we make available for different energy pathways and scenarios.
+ It is the base for all the scenarios we create.
 
 
 Data
@@ -34,10 +14,7 @@ uganda_sequences.csv
 
 Installation requirements
 -------------------------
-
-This example requires oemof.solph (v0.5.x), install by:
-
-    pip install oemof.solph[examples]
+see README.md
 
 
 License
@@ -190,14 +167,8 @@ excess = solph.components.Sink(
 # create source object representing the fuel oil commodity
 fuel_oil_resource = solph.components.Source(
     label="fuel_oil", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_fuel_oil)}
-)  # nominal value is set to 1 to model continuous operation of fuel oil power plant
-                # nominal_value=fossil_share
-                #* consumption_total
-                #/ 0.58
-                #* number_timesteps
-                #/ 8760,
-                #full_load_time_max=1,
-           #)
+)
+
 # create biofuel source object
 biofuel_resource = solph.components.Source(
     label="biofuel", outputs={bbfuel: solph.Flow(nominal_value=1, variable_costs=price_biofuel)}
@@ -223,15 +194,18 @@ bagasse_resource = solph.components.Source(
 )
 
 vegetal_waste = solph.components.Source(
-    label="vegetal waste", outputs={borg: solph.Flow(variable_costs=price_waste_biomass)} #sustainable harvest 1.2 Million tons
+    label="vegetal waste", outputs={borg: solph.Flow(variable_costs=price_waste_biomass)}
+    # sustainable harvest 1.2 Million tons
 )
 
 animal_waste = solph.components.Source(
-    label="animal waste", outputs={borg: solph.Flow(variable_costs=price_waste_biomass)} #sustainable harvest 1 Million tons
+    label="animal waste", outputs={borg: solph.Flow(variable_costs=price_waste_biomass)}
+    # sustainable harvest 1 Million tons
 )
 
 human_waste = solph.components.Source(
-    label="human waste", outputs={borg: solph.Flow(variable_costs=price_waste_biomass)} #sustainable harvest 1 Million tons
+    label="human waste", outputs={borg: solph.Flow(variable_costs=price_waste_biomass)}
+    # sustainable harvest 1 Million tons
 )
 
 # Begrenzung biomasse mit summed max
@@ -294,11 +268,8 @@ pp_nuclear = solph.components.Transformer(
     label="pp_nuclear",
     inputs={buran: solph.Flow()},
     outputs={
-        bel: solph.Flow(
-            variable_costs=3.4,
-            investment=solph.Investment(ep_costs=epc_nuclear)
-
-        )
+        bel: solph.Flow(  # full_load_time_min=8760,
+                        variable_costs=3.4, investment=solph.Investment(ep_costs=epc_nuclear))
     },
     conversion_factors={bel: 0.33}
 )
@@ -307,10 +278,7 @@ blender_biofuel = solph.components.Transformer(
     label="blender_biofuel",
     inputs={bbfuel: solph.Flow()},
     outputs={
-        bfuel: solph.Flow(
-            variable_costs=0.1,
-            investment=solph.Investment(ep_costs=0, existing=0)
-        )
+        bfuel: solph.Flow(variable_costs=0.1, investment=solph.Investment(ep_costs=0, existing=0))
     })
 
 # create simple transformer object representing a fuel oil plant
@@ -318,12 +286,9 @@ pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
     inputs={bfuel: solph.Flow()},
     outputs={
-        bel: solph.Flow(   #  full_load_time_min=8760,
-            variable_costs=3.4,
-            investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92)
-            # see BAU is investment in oil possible?;
-            # in RE scenario it is not an investment object -> maximum = 0
-        )
+        bel: solph.Flow(  # full_load_time_min=number_timesteps,  # constant operation at rated power
+                        variable_costs=3.4,
+                        investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92))
     },
     conversion_factors={bel: 0.58},
 )
@@ -383,7 +348,7 @@ wood_boiler = solph.components.Transformer(
 pp_bagasse = solph.components.Transformer(
     label="pp_bagasse",
     inputs={bba: solph.Flow(
-        variable_costs=5,
+        variable_costs=5,   # full_load_time_min=8760,
         investment=solph.Investment(ep_costs=epc_biomass, existing=112, maximum=1592)
     )},
     outputs={
@@ -672,21 +637,22 @@ demand_aviation = solph.components.Sink(
 )
 
 # cooking demand, transport demand sinks!
-energysystem.add(excess, fuel_oil_resource, uranium_resource, biofuel_resource, tree_biomass_resource, bush_resource,
-                 papyrus_resource, vegetal_waste,animal_waste, human_waste, bagasse_resource, lpg_resource, kerosene_resource, wind,
-                 pv, hydro, geothermal, demand_el, demand_cooking, demand_transport, demand_aviation, pp_fuel_oil, pp_nuclear,
-                 pp_bagasse, biogas_heating, industrial_boiler, digester, battery_storage, electrolyzer, fuel_cell, aviation,
-                 hydrogen_storage, transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
+energysystem.add(excess, fuel_oil_resource, uranium_resource, biofuel_resource, tree_biomass_resource,
+                 bush_resource, papyrus_resource, vegetal_waste, animal_waste, human_waste, bagasse_resource,
+                 lpg_resource, kerosene_resource, wind, pv, hydro, geothermal, demand_el, demand_cooking,
+                 demand_transport, demand_aviation, pp_fuel_oil, pp_nuclear, pp_bagasse, biogas_heating,
+                 industrial_boiler, digester, battery_storage, electrolyzer, fuel_cell, aviation, hydrogen_storage,
+                 transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
                  stove_biogas, stove_ethanol, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
                  infinite_fuel_storage, infinite_biogas_storage, blender_biofuel, wood_boiler)
 
 ##########################################################################
-### Visualize the energy system
+# Visualize the energy system
 ##########################################################################
 
 import graphviz
 from oemof_visio import ESGraphRenderer
-            
+
 os.environ["PATH"] += os.pathsep + 'C:/Program Files/Graphviz/bin/'
 gr = ESGraphRenderer(energy_system=energysystem, filepath="superstructure_2040", img_format="png")
 gr.view()
@@ -710,7 +676,7 @@ om.solve(solver="glpk", solve_kwargs={"tee": True})
 
 results = solph.processing.results(om)
 
-#fuel_bus = solph.views.node(results, "fuel_bus")
+fuel_bus = solph.views.node(results, "fuel_bus")
 electricity_bus = solph.views.node(results, "electricity")
 heat_bus = solph.views.node(results, "heat_bus")
 cooking_bus = solph.views.node(results, "cooking_bus")
@@ -720,13 +686,13 @@ aviation_bus = solph.views.node(results, "aviation_bus")
 meta_results = solph.processing.meta_results(om)
 pp.pprint(meta_results)
 
-#fuel_scalars = fuel_bus["scalars"] # create sum of sequences to see used fossil fuel and biofuel...
+# fuel_scalars = fuel_bus["scalars"] # create sum of sequences to see used fossil fuel and biofuel...
 electricity_scalars = electricity_bus["scalars"]
 heat_scalars = heat_bus["scalars"]
 cooking_scalars = cooking_bus["scalars"]
 transport_scalars = transport_bus["scalars"]
 aviation_scalars = aviation_bus["scalars"]
-#shipping_scalars = shipping_bus["scalars"]
+
 
 electricity_sequences = electricity_bus["sequences"]
 heat_sequences = heat_bus["sequences"]
@@ -734,8 +700,10 @@ cooking_sequences = cooking_bus["sequences"]
 transport_sequences = transport_bus["sequences"]
 aviation_sequences = aviation_bus["sequences"]
 
-my_results = pd.concat([electricity_scalars, heat_scalars, cooking_scalars, transport_scalars, aviation_scalars], axis=0)
-sequences = pd.concat([electricity_sequences, heat_sequences, cooking_sequences, transport_sequences, aviation_sequences], axis=1)
+my_results = pd.concat([electricity_scalars, heat_scalars, cooking_scalars, transport_scalars, aviation_scalars],
+                       axis=0)
+sequences = pd.concat([electricity_sequences, heat_sequences, cooking_sequences, transport_sequences,
+                       aviation_sequences], axis=1)
 # installed capacity of storage in GWh
 my_results["storage_invest_GWh"] = (
         results[(battery_storage, None)]["scalars"]["invest"] / 1e6
@@ -776,22 +744,31 @@ effective_end_use_stove_improved = results[(stove_improved, bcook)]["sequences"]
 effective_end_use_stove_unimproved = results[(stove_unimproved, bcook)]["sequences"].sum()
 my_results["effective_end_use_stove_improved"] = effective_end_use_stove_improved
 my_results["effective_end_use_stove_unimproved"] = effective_end_use_stove_unimproved
-non_renewable_biomass_cooking =unsustainable_biomass/total_woody_biomass *\
+non_renewable_biomass_cooking = unsustainable_biomass/total_woody_biomass *\
                                (effective_end_use_stove_unimproved+effective_end_use_stove_improved)
 my_results["non_renewable_biomass_cooking"] = non_renewable_biomass_cooking
-my_results["res_share_effective_end_use_energy"] = (
+
+# biofuel share
+my_results["biofuel_share"] = (
+    results[(blender_biofuel, bfuel)]["sequences"].sum()
+    / (results[(blender_biofuel, bfuel)]["sequences"].sum()+results[(fuel_oil_resource, bfuel)]["sequences"].sum())
+)
+
+# RE share electricity production
+my_results["RE_share_electricity production"] = (
         1
         - (results[(pp_fuel_oil, bel)]["sequences"].sum()
-        + results[(pp_nuclear, bel)]["sequences"].sum()
-        + results[(stove_lpg, bcook)]["sequences"].sum()
-        + results[(transport_ce, btrans)]["sequences"].sum()
-        + results[(aviation, bavia)]["sequences"].sum()
-        + non_renewable_biomass_cooking)
-        / (results[(bel, demand_el)]["sequences"].sum()
-        + results[(bcook, demand_cooking)]["sequences"].sum()
-        + results[(btrans, demand_transport)]["sequences"].sum()
-        + results[(bheat, demand_heat)]["sequences"].sum()
-        + results[(bavia, demand_aviation)]["sequences"].sum()
+           + results[(pp_nuclear, bel)]["sequences"].sum())
+        / results[(bel, demand_el)]["sequences"].sum()
+)
+my_results["RE_share_effective_end_use_energy"] = (
+        1
+        - (results[(pp_fuel_oil, bel)]["sequences"].sum() + results[(pp_nuclear, bel)]["sequences"].sum()
+           + results[(stove_lpg, bcook)]["sequences"].sum() + results[(transport_ce, btrans)]["sequences"].sum()
+           + results[(aviation, bavia)]["sequences"].sum() + non_renewable_biomass_cooking)
+        / (results[(bel, demand_el)]["sequences"].sum() + results[(bcook, demand_cooking)]["sequences"].sum()
+           + results[(btrans, demand_transport)]["sequences"].sum()
+           + results[(bheat, demand_heat)]["sequences"].sum() + results[(bavia, demand_aviation)]["sequences"].sum()
            )
 )
 

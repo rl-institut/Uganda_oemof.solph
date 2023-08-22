@@ -8,18 +8,18 @@
 "(('pp_nuclear', 'electricity'), 'invest')",0.33
 "(('pv', 'electricity'), 'invest')",0.0
 "(('wind', 'electricity'), 'invest')",14064.0047773252
-"(('biogas heating', 'heat_bus'), 'invest')",1.20170978102657e-12
+"(('biogas heating', 'heat_bus'), 'invest')",0.0
 "(('industrial boiler', 'heat_bus'), 'invest')",0.0
 "(('wood boiler', 'heat_bus'), 'invest')",2835.2
 "(('LPG stoves', 'cooking_bus'), 'invest')",23692.9883768423
-"(('biogas stoves', 'cooking_bus'), 'invest')",-2.4261068307996e-27
+"(('biogas stoves', 'cooking_bus'), 'invest')",0.0
 "(('electric cookers', 'cooking_bus'), 'invest')",4534.77162315766
 "(('ethanol stoves', 'cooking_bus'), 'invest')",0.0
 "(('improved stoves', 'cooking_bus'), 'invest')",10159.24
 "(('unimproved stoves', 'cooking_bus'), 'invest')",0.0
 "(('combustion engine transport vehicles', 'transport_bus'), 'invest')",0.0
 "(('electric transport vehicles', 'transport_bus'), 'invest')",3990.0
-"(('hydrogen vehicles', 'transport_bus'), 'invest')",496.746712181176
+"(('hydrogen vehicles', 'transport_bus'), 'invest')",496.746712181175
 "(('aviation', 'aviation_bus'), 'invest')",154.0
 storage_invest_GWh,0.0141710756771521
 wind_invest_MW,14.0640047773252
@@ -34,6 +34,12 @@ dtype: float64"
 non_renewable_biomass_cooking,"variable_name
 flow    0.0
 dtype: float64"
-res_share_effective_end_use_energy,"variable_name
-flow    0.808508
+biofuel_share,"variable_name
+flow    0.5
+dtype: float64"
+RE_share_electricity production,"variable_name
+flow    0.999292
+dtype: float64"
+RE_share_effective_end_use_energy,"variable_name
+flow    0.735351
 dtype: float64"
