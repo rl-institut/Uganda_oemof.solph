@@ -82,7 +82,7 @@ epc_pv = 90345  # economics.annuity (n=20, wacc=0.05)
 epc_hydro = 247500  # economics.annuity (n=20, wacc=0.05)
 epc_battery = 21812.5  # economics.annuity (n=20, wacc=0.05)
 epc_hydrogen_storage = 3937.5
-epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
+epc_fuel_oil = 10  # 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
 epc_nuclear = 506192.5  # economics.annuity (n=50, wacc=0.05)
@@ -166,17 +166,17 @@ excess = solph.components.Sink(
 
 # create source object representing the fuel oil commodity
 fuel_oil_resource = solph.components.Source(
-    label="fuel_oil", outputs={bfuel: solph.Flow(nominal_value=1, variable_costs=price_fuel_oil)}
+    label="fuel_oil", outputs={bfuel: solph.Flow(variable_costs=price_fuel_oil)}
 )
 
 # create biofuel source object
 biofuel_resource = solph.components.Source(
-    label="biofuel", outputs={bbfuel: solph.Flow(nominal_value=1, variable_costs=price_biofuel)}
+    label="biofuel", outputs={bbfuel: solph.Flow(variable_costs=price_biofuel, nominal_value=1, max=1007)}
 )
 
 # uranium resource
 uranium_resource = solph.components.Source(
-    label="uranium", outputs={buran: solph.Flow(nominal_value=1, variable_costs=price_uranium)}
+    label="uranium", outputs={buran: solph.Flow(variable_costs=price_uranium)}
 )
 # create source object representing tree biomass commodity
 tree_biomass_resource = solph.components.Source(
@@ -268,7 +268,7 @@ pp_nuclear = solph.components.Transformer(
     label="pp_nuclear",
     inputs={buran: solph.Flow()},
     outputs={
-        bel: solph.Flow(  # full_load_time_min=8760,
+        bel: solph.Flow(full_load_time_min=number_timesteps,  # constant operation at rated power
                         variable_costs=3.4, investment=solph.Investment(ep_costs=epc_nuclear))
     },
     conversion_factors={bel: 0.33}
@@ -286,11 +286,10 @@ pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
     inputs={bfuel: solph.Flow()},
     outputs={
-        bel: solph.Flow(  # full_load_time_min=number_timesteps,  # constant operation at rated power
-                        variable_costs=3.4,
+        bel: solph.Flow(variable_costs=3.4,
                         investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92))
     },
-    conversion_factors={bel: 0.58},
+    conversion_factors={bel: 0.375},
 )
 
 # Anaerobic Digester
@@ -492,17 +491,17 @@ infinite_kerosene_storage = solph.components.GenericStorage(
 
 # infinite and free storage fuel oil
 infinite_fuel_storage = solph.components.GenericStorage(
-    label="infinite fuel oil storage",
-    inputs={bfuel: solph.Flow(variable_costs=0)},
-    outputs={bfuel: solph.Flow()},
-    loss_rate=0.00,
-    initial_storage_level=0,
-    invest_relation_input_capacity=1,
-    invest_relation_output_capacity=1,
-    inflow_conversion_factor=1,
-    outflow_conversion_factor=1,
-    investment=solph.Investment(ep_costs=0),
-)
+     label="infinite fuel oil storage",
+     inputs={bfuel: solph.Flow(variable_costs=0)},
+     outputs={bfuel: solph.Flow()},
+     loss_rate=0.00,
+     initial_storage_level=0,
+     invest_relation_input_capacity=1,
+     invest_relation_output_capacity=1,
+     inflow_conversion_factor=1,
+     outflow_conversion_factor=1,
+     investment=solph.Investment(ep_costs=0),
+ )
 # infinite and free storage lpg
 infinite_lpg_storage = solph.components.GenericStorage(
     label="infinite lpg storage",
@@ -644,7 +643,7 @@ energysystem.add(excess, fuel_oil_resource, uranium_resource, biofuel_resource, 
                  industrial_boiler, digester, battery_storage, electrolyzer, fuel_cell, aviation, hydrogen_storage,
                  transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
                  stove_biogas, stove_ethanol, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
-                 infinite_fuel_storage, infinite_biogas_storage, blender_biofuel, wood_boiler)
+                 infinite_biogas_storage, blender_biofuel, wood_boiler, infinite_fuel_storage)
 
 ##########################################################################
 # Visualize the energy system
