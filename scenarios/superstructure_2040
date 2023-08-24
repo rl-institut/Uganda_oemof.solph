@@ -3,6 +3,7 @@ digraph {
 	biofuel_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
 	uranium_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
 	electricity [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
+	peat_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
 	organic_waste_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
 	kerosene_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
 	bagasse_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
@@ -14,7 +15,6 @@ digraph {
 	hydrogen_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
 	lpg_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
 	woody_biomass_bus [color=lightgrey fixedsize=shape fontsize=10 height=0.3 shape=rectangle style=filled width=4.1]
-	excess_bel [fontsize=10 shape=trapezium]
 	fuel_oil [fontsize=10 shape=invtrapezium]
 	uranium [fontsize=10 shape=invtrapezium]
 	biofuel [fontsize=10 shape=invtrapezium]
@@ -58,7 +58,6 @@ ting" [fontsize=10 shape=rectangle]
 	"electrolyz
 er" [fontsize=10 shape=rectangle]
 	fuel_cell [fontsize=10 shape=rectangle]
-	aviation [fontsize=10 shape=rectangle]
 	"hydrogen_s
 torage" [fontsize=10 shape=rectangle style=rounded]
 	"electric t
@@ -99,10 +98,18 @@ r" [fontsize=10 shape=rectangle]
 	"infinite f
 uel oil st
 orage" [fontsize=10 shape=rectangle style=rounded]
+	pp_peat [fontsize=10 shape=rectangle]
+	peat [fontsize=10 shape=invtrapezium]
+	"excess_ele
+ctricity" [fontsize=10 shape=trapezium]
+	"kerosene a
+viation" [fontsize=10 shape=rectangle]
+	"hydrogen a
+viation" [fontsize=10 shape=rectangle]
+	fuel_oil -> fuel_bus
 	"infinite f
 uel oil st
 orage" -> fuel_bus
-	fuel_oil -> fuel_bus
 	"blender_bi
 ofuel" -> fuel_bus
 	fuel_bus -> "pp_fuel_oi
@@ -123,17 +130,17 @@ ofuel"
 oves"
 	uranium -> uranium_bus
 	uranium_bus -> pp_nuclear
-	geothermal -> electricity
-	fuel_cell -> electricity
+	pp_bagasse -> electricity
+	hydro -> electricity
 	"pp_fuel_oi
 l" -> electricity
-	hydro -> electricity
-	pp_bagasse -> electricity
-	wind -> electricity
+	pp_peat -> electricity
+	battery -> electricity
 	pv -> electricity
 	pp_nuclear -> electricity
-	battery -> electricity
-	electricity -> excess_bel
+	geothermal -> electricity
+	wind -> electricity
+	fuel_cell -> electricity
 	electricity -> "electrolyz
 er"
 	electricity -> battery
@@ -144,10 +151,14 @@ ehicles"
 ookers"
 	electricity -> "electricit
 y demand"
-	"vegetal wa
-ste" -> organic_waste_bus
+	electricity -> "excess_ele
+ctricity"
+	peat -> peat_bus
+	peat_bus -> pp_peat
 	"human wast
 e" -> organic_waste_bus
+	"vegetal wa
+ste" -> organic_waste_bus
 	"animal was
 te" -> organic_waste_bus
 	organic_waste_bus -> digester
@@ -155,7 +166,8 @@ te" -> organic_waste_bus
 erosene st
 orage" -> kerosene_bus
 	kerosene -> kerosene_bus
-	kerosene_bus -> aviation
+	kerosene_bus -> "kerosene a
+viation"
 	kerosene_bus -> "infinite k
 erosene st
 orage"
@@ -172,19 +184,19 @@ iogas stor
 age"
 	biogas_bus -> "biogas sto
 ves"
-	"biogas hea
-ting" -> heat_bus
+	pp_bagasse -> heat_bus
 	"wood boile
 r" -> heat_bus
-	pp_bagasse -> heat_bus
 	"industrial
  boiler" -> heat_bus
+	"biogas hea
+ting" -> heat_bus
 	heat_bus -> "heat deman
 d"
+	"hydrogen v
+ehicles" -> transport_bus
 	"electric t
 ransport v
-ehicles" -> transport_bus
-	"hydrogen v
 ehicles" -> transport_bus
 	"combustion
  engine tr
@@ -192,45 +204,50 @@ ansport ve
 hicles" -> transport_bus
 	transport_bus -> "transport 
 demand"
-	aviation -> aviation_bus
+	"hydrogen a
+viation" -> aviation_bus
+	"kerosene a
+viation" -> aviation_bus
 	aviation_bus -> "aviation d
 emand"
-	"electric c
-ookers" -> cooking_bus
 	"ethanol st
 oves" -> cooking_bus
-	"biogas sto
-ves" -> cooking_bus
 	"improved s
 toves" -> cooking_bus
-	"LPG stoves" -> cooking_bus
 	"unimproved
  stoves" -> cooking_bus
+	"biogas sto
+ves" -> cooking_bus
+	"LPG stoves" -> cooking_bus
+	"electric c
+ookers" -> cooking_bus
 	cooking_bus -> "cooking de
 mand"
-	"electrolyz
-er" -> hydrogen_bus
 	"hydrogen_s
 torage" -> hydrogen_bus
+	"electrolyz
+er" -> hydrogen_bus
 	hydrogen_bus -> fuel_cell
 	hydrogen_bus -> "hydrogen_s
 torage"
 	hydrogen_bus -> "hydrogen v
 ehicles"
+	hydrogen_bus -> "hydrogen a
+viation"
 	lpg -> lpg_bus
 	"infinite l
 pg storage" -> lpg_bus
 	lpg_bus -> "infinite l
 pg storage"
 	lpg_bus -> "LPG stoves"
-	"papyrus bi
-omass" -> woody_biomass_bus
-	"tree bioma
-ss" -> woody_biomass_bus
 	"infinite b
 iomass sto
 rage" -> woody_biomass_bus
+	"papyrus bi
+omass" -> woody_biomass_bus
 	"bush bioma
+ss" -> woody_biomass_bus
+	"tree bioma
 ss" -> woody_biomass_bus
 	woody_biomass_bus -> "wood boile
 r"

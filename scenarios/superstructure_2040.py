@@ -82,7 +82,8 @@ epc_pv = 90345  # economics.annuity (n=20, wacc=0.05)
 epc_hydro = 247500  # economics.annuity (n=20, wacc=0.05)
 epc_battery = 21812.5  # economics.annuity (n=20, wacc=0.05)
 epc_hydrogen_storage = 3937.5
-epc_fuel_oil = 10  # 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
+epc_fuel_oil = 98000  # economics.annuity(capex=1000, n=20, wacc=0.05)
+epc_peat = 187182.5  # economics.annuity(capex=1000, n=25, wacc=0.05)
 epc_biomass = 206250  # sugarcane bagasse CHP
 epc_electrolyzer = 50625  # hydrogen electrolyzer
 epc_nuclear = 506192.5  # economics.annuity (n=50, wacc=0.05)
@@ -100,7 +101,8 @@ epc_ethanol_stove = 1000
 epc_combustion_engine_transport = 13937.5
 epc_electric_transport = 20500
 epc_hydrogen_transport = 17875
-epc_aviation = 650687.5
+epc_kerosene_aviation = 650687.5
+epc_hydrogen_aviation = 1000000
 
 
 ##########################################################################
@@ -115,8 +117,11 @@ bfuel = solph.Bus(label="fuel_bus")
 # create biofuel bus
 bbfuel = solph.Bus(label="biofuel_bus")
 
-# create uran bus
+# create uranium bus
 buran = solph.Bus(label="uranium_bus")
+
+# create peat bus
+bpeat = solph.Bus(label="peat_bus")
 
 # create kerosene bus
 bks = solph.Bus(label="kerosene_bus")
@@ -157,12 +162,8 @@ bba = solph.Bus(label='bagasse_bus')
 # create lpg bus
 blpg = solph.Bus(label='lpg_bus')
 
-energysystem.add(bfuel, bbfuel, buran, bel, borg, bks, bba, bbg, bheat, btrans, bavia, bcook, bhg, blpg, bwood)
+energysystem.add(bfuel, bbfuel, buran, bel, bpeat, borg, bks, bba, bbg, bheat, btrans, bavia, bcook, bhg, blpg, bwood)
 
-# create excess component for the electricity bus to allow overproduction
-excess = solph.components.Sink(
-    label="excess_bel", inputs={bel: solph.Flow()}
-)
 
 # create source object representing the fuel oil commodity
 fuel_oil_resource = solph.components.Source(
@@ -174,6 +175,10 @@ biofuel_resource = solph.components.Source(
     label="biofuel", outputs={bbfuel: solph.Flow(variable_costs=price_biofuel, nominal_value=1, max=1007)}
 )
 
+# create peat source object
+peat_resource = solph.components.Source(
+    label="peat", outputs={bpeat: solph.Flow(variable_costs=price_peat)}
+)
 # uranium resource
 uranium_resource = solph.components.Source(
     label="uranium", outputs={buran: solph.Flow(variable_costs=price_uranium)}
@@ -269,7 +274,7 @@ pp_nuclear = solph.components.Transformer(
     inputs={buran: solph.Flow()},
     outputs={
         bel: solph.Flow(full_load_time_min=number_timesteps,  # constant operation at rated power
-                        variable_costs=3.4, investment=solph.Investment(ep_costs=epc_nuclear))
+                        variable_costs=13, investment=solph.Investment(ep_costs=epc_nuclear))
     },
     conversion_factors={bel: 0.33}
 )
@@ -286,11 +291,25 @@ pp_fuel_oil = solph.components.Transformer(
     label="pp_fuel_oil",
     inputs={bfuel: solph.Flow()},
     outputs={
-        bel: solph.Flow(variable_costs=3.4,
+        bel: solph.Flow(full_load_time_min=number_timesteps,  # constant operation at rated power
+                        variable_costs=3.4,
                         investment=solph.Investment(ep_costs=epc_fuel_oil, existing=92))
     },
     conversion_factors={bel: 0.375},
 )
+
+# create simple transformer object representing a fuel oil plant
+pp_peat = solph.components.Transformer(
+    label="pp_peat",
+    inputs={bpeat: solph.Flow()},
+    outputs={
+        bel: solph.Flow(full_load_time_min=number_timesteps,  # constant operation at rated power
+                        variable_costs=6.8,
+                        investment=solph.Investment(ep_costs=epc_peat, maximum=800))
+    },
+    conversion_factors={bel: 0.4},
+)
+
 
 # Anaerobic Digester
 digester = solph.components.Transformer(
@@ -449,14 +468,26 @@ transport_hg = solph.components.Transformer(
     },
     conversion_factors={btrans: 0.3},
 )
-# airplanes
-aviation = solph.components.Transformer(
-    label="aviation",
+# hydrogen airplanes
+airplanes_hydrogen = solph.components.Transformer(
+    label="hydrogen aviation",
+    inputs={bhg: solph.Flow()},
+    outputs={
+        bavia: solph.Flow(
+            variable_costs=0,
+            investment=solph.Investment(ep_costs=epc_hydrogen_aviation)
+        )
+    },
+    conversion_factors={bavia: 0.3},
+)
+# kerosene airplanes
+airplanes_kerosene = solph.components.Transformer(
+    label="kerosene aviation",
     inputs={bks: solph.Flow()},
     outputs={
         bavia: solph.Flow(
             variable_costs=0,
-            investment=solph.Investment(ep_costs=epc_aviation)
+            investment=solph.Investment(ep_costs=epc_kerosene_aviation)
         )
     },
     conversion_factors={bavia: 0.3},
@@ -619,6 +650,12 @@ demand_heat = solph.components.Sink(
     inputs={bheat: solph.Flow(fix=data["demand_heat"], nominal_value=2908)},
 )
 
+# create simple sink object representing excess electricty production allowing overproduction
+excess_electricity = solph.components.Sink(
+    label="excess_electricity",
+    inputs={bel: solph.Flow()},
+)
+
 # create simple sink object representing the cooking demand
 demand_cooking = solph.components.Sink(
     label="cooking demand",
@@ -636,14 +673,15 @@ demand_aviation = solph.components.Sink(
 )
 
 # cooking demand, transport demand sinks!
-energysystem.add(excess, fuel_oil_resource, uranium_resource, biofuel_resource, tree_biomass_resource,
+energysystem.add(fuel_oil_resource, uranium_resource, biofuel_resource, tree_biomass_resource,
                  bush_resource, papyrus_resource, vegetal_waste, animal_waste, human_waste, bagasse_resource,
                  lpg_resource, kerosene_resource, wind, pv, hydro, geothermal, demand_el, demand_cooking,
                  demand_transport, demand_aviation, pp_fuel_oil, pp_nuclear, pp_bagasse, biogas_heating,
-                 industrial_boiler, digester, battery_storage, electrolyzer, fuel_cell, aviation, hydrogen_storage,
+                 industrial_boiler, digester, battery_storage, electrolyzer, fuel_cell, hydrogen_storage,
                  transport_el, transport_ce, transport_hg, cooker_el, stove_unimproved, stove_improved, stove_lpg,
                  stove_biogas, stove_ethanol, infinite_wood_storage, infinite_kerosene_storage, infinite_lpg_storage,
-                 infinite_biogas_storage, blender_biofuel, wood_boiler, infinite_fuel_storage)
+                 infinite_biogas_storage, blender_biofuel, wood_boiler, infinite_fuel_storage, pp_peat, peat_resource,
+                 excess_electricity, airplanes_kerosene, airplanes_hydrogen)
 
 ##########################################################################
 # Visualize the energy system
@@ -757,15 +795,22 @@ my_results["biofuel_share"] = (
 my_results["RE_share_electricity production"] = (
         1
         - (results[(pp_fuel_oil, bel)]["sequences"].sum()
-           + results[(pp_nuclear, bel)]["sequences"].sum())
-        / results[(bel, demand_el)]["sequences"].sum()
+           + results[(pp_nuclear, bel)]["sequences"].sum()
+           + results[(pp_peat, bel)]["sequences"].sum())
+        / (results[(bel, demand_el)]["sequences"].sum() + results[(bel, excess_electricity)]["sequences"].sum()
+           + results[(bel, cooker_el)]["sequences"].sum() + results[(bel, transport_el)]["sequences"].sum()
+           + results[(bel, electrolyzer)]["sequences"].sum() - results[(fuel_cell, bel)]["sequences"].sum())
 )
 my_results["RE_share_effective_end_use_energy"] = (
         1
         - (results[(pp_fuel_oil, bel)]["sequences"].sum() + results[(pp_nuclear, bel)]["sequences"].sum()
+           + results[(pp_peat, bel)]["sequences"].sum()
            + results[(stove_lpg, bcook)]["sequences"].sum() + results[(transport_ce, btrans)]["sequences"].sum()
-           + results[(aviation, bavia)]["sequences"].sum() + non_renewable_biomass_cooking)
-        / (results[(bel, demand_el)]["sequences"].sum() + results[(bcook, demand_cooking)]["sequences"].sum()
+           + results[(airplanes_kerosene, bavia)]["sequences"].sum() + non_renewable_biomass_cooking)
+        / (results[(bel, demand_el)]["sequences"].sum() + results[(bel, excess_electricity)]["sequences"].sum()
+           + results[(bel, transport_el)]["sequences"].sum()
+           + results[(bel, electrolyzer)]["sequences"].sum() - results[(fuel_cell, bel)]["sequences"].sum()
+           + results[(bcook, demand_cooking)]["sequences"].sum()
            + results[(btrans, demand_transport)]["sequences"].sum()
            + results[(bheat, demand_heat)]["sequences"].sum() + results[(bavia, demand_aviation)]["sequences"].sum()
            )
