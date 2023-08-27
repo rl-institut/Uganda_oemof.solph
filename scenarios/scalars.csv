@@ -2,14 +2,12 @@
 "(('battery', 'electricity'), 'invest')",2036.04609493799
 "(('electricity', 'battery'), 'invest')",2036.04609493799
 "(('fuel_cell', 'electricity'), 'invest')",0.0
-"(('geothermal', 'electricity'), 'invest')",0.0
-"(('hydro', 'electricity'), 'invest')",0.0
 "(('pp_fuel_oil', 'electricity'), 'invest')",2382.06953426433
 "(('pp_nuclear', 'electricity'), 'invest')",0.0
 "(('pp_peat', 'electricity'), 'invest')",0.0
 "(('pv', 'electricity'), 'invest')",0.0
 "(('wind', 'electricity'), 'invest')",0.0
-"(('biogas heating', 'heat_bus'), 'invest')",9.14047573252026e-14
+"(('biogas heating', 'heat_bus'), 'invest')",-2.7754177070132e-12
 "(('industrial boiler', 'heat_bus'), 'invest')",0.0
 "(('wood boiler', 'heat_bus'), 'invest')",2835.2
 "(('LPG stoves', 'cooking_bus'), 'invest')",26380.4088822344
@@ -17,7 +15,7 @@
 "(('electric cookers', 'cooking_bus'), 'invest')",1394.2011177656
 "(('ethanol stoves', 'cooking_bus'), 'invest')",453.15
 "(('improved stoves', 'cooking_bus'), 'invest')",10159.24
-"(('unimproved stoves', 'cooking_bus'), 'invest')",0.0
+"(('unimproved stoves', 'cooking_bus'), 'invest')",1.66939268931469e-13
 "(('combustion engine transport vehicles', 'transport_bus'), 'invest')",3990.0
 "(('electric transport vehicles', 'transport_bus'), 'invest')",0.0
 "(('hydrogen vehicles', 'transport_bus'), 'invest')",0.0
