@@ -170,7 +170,7 @@ fuel_oil_resource = solph.components.Source(
 
 # create biofuel source object
 biofuel_resource = solph.components.Source(
-    label="biofuel", outputs={bbfuel: solph.Flow(variable_costs=price_biofuel, nominal_value=1, max=1007)}
+    label="biofuel", outputs={bbfuel: solph.Flow(variable_costs=price_biofuel, nominal_value=1, max=0)}
 )
 
 # create peat source object
@@ -623,13 +623,13 @@ stove_ethanol = solph.components.Transformer(
 # create simple sink object representing the electrical demand
 demand_el = solph.components.Sink(
     label="electricity demand",
-    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=4168)},
+    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=740.6)},
 )
 
 # create simple sink object representing the heat demand
 demand_heat = solph.components.Sink(
     label="heat demand",
-    inputs={bheat: solph.Flow(fix=data["demand_heat"], nominal_value=2908)},
+    inputs={bheat: solph.Flow(fix=data["demand_heat"], nominal_value=1217)},
 )
 
 # create simple sink object representing excess electricty production allowing overproduction
@@ -641,17 +641,17 @@ excess_electricity = solph.components.Sink(
 # create simple sink object representing the cooking demand
 demand_cooking = solph.components.Sink(
     label="cooking demand",
-    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=38387)},
+    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=20943)},
 )
 
 demand_transport = solph.components.Sink(
     label="transport demand",
-    inputs={btrans: solph.Flow(fix=data["demand_transport"], nominal_value=3990)},
+    inputs={btrans: solph.Flow(fix=data["demand_transport"], nominal_value=1187)},
 )
 
 demand_aviation = solph.components.Sink(
     label="aviation demand",
-    inputs={bavia: solph.Flow(fix=data["demand_aviation"], nominal_value=154.0)},
+    inputs={bavia: solph.Flow(fix=data["demand_aviation"], nominal_value=45.81)},
 )
 
 # cooking demand, transport demand sinks!

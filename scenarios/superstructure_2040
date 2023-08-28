@@ -130,17 +130,17 @@ ofuel"
 oves"
 	uranium -> uranium_bus
 	uranium_bus -> pp_nuclear
-	pp_bagasse -> electricity
-	geothermal -> electricity
-	pp_peat -> electricity
+	wind -> electricity
 	"pp_fuel_oi
 l" -> electricity
-	fuel_cell -> electricity
-	pp_nuclear -> electricity
-	pv -> electricity
-	hydro -> electricity
 	battery -> electricity
-	wind -> electricity
+	hydro -> electricity
+	pv -> electricity
+	pp_nuclear -> electricity
+	geothermal -> electricity
+	pp_bagasse -> electricity
+	fuel_cell -> electricity
+	pp_peat -> electricity
 	electricity -> "electrolyz
 er"
 	electricity -> battery
@@ -155,17 +155,17 @@ y demand"
 ctricity"
 	peat -> peat_bus
 	peat_bus -> pp_peat
-	"human wast
-e" -> organic_waste_bus
-	"animal was
-te" -> organic_waste_bus
 	"vegetal wa
 ste" -> organic_waste_bus
+	"animal was
+te" -> organic_waste_bus
+	"human wast
+e" -> organic_waste_bus
 	organic_waste_bus -> digester
-	kerosene -> kerosene_bus
 	"infinite k
 erosene st
 orage" -> kerosene_bus
+	kerosene -> kerosene_bus
 	kerosene_bus -> "kerosene a
 viation"
 	kerosene_bus -> "infinite k
@@ -173,10 +173,10 @@ erosene st
 orage"
 	bagasse -> bagasse_bus
 	bagasse_bus -> pp_bagasse
+	digester -> biogas_bus
 	"infinite b
 iogas stor
 age" -> biogas_bus
-	digester -> biogas_bus
 	biogas_bus -> "biogas hea
 ting"
 	biogas_bus -> "infinite b
@@ -184,24 +184,24 @@ iogas stor
 age"
 	biogas_bus -> "biogas sto
 ves"
-	"wood boile
-r" -> heat_bus
 	"industrial
  boiler" -> heat_bus
-	pp_bagasse -> heat_bus
+	"wood boile
+r" -> heat_bus
 	"biogas hea
 ting" -> heat_bus
+	pp_bagasse -> heat_bus
 	heat_bus -> "heat deman
 d"
-	"electric t
-ransport v
-ehicles" -> transport_bus
 	"hydrogen v
 ehicles" -> transport_bus
 	"combustion
  engine tr
 ansport ve
 hicles" -> transport_bus
+	"electric t
+ransport v
+ehicles" -> transport_bus
 	transport_bus -> "transport 
 demand"
 	"hydrogen a
@@ -210,23 +210,23 @@ viation" -> aviation_bus
 viation" -> aviation_bus
 	aviation_bus -> "aviation d
 emand"
-	"ethanol st
-oves" -> cooking_bus
-	"improved s
-toves" -> cooking_bus
 	"LPG stoves" -> cooking_bus
-	"biogas sto
-ves" -> cooking_bus
 	"electric c
 ookers" -> cooking_bus
+	"biogas sto
+ves" -> cooking_bus
+	"improved s
+toves" -> cooking_bus
+	"ethanol st
+oves" -> cooking_bus
 	"unimproved
  stoves" -> cooking_bus
 	cooking_bus -> "cooking de
 mand"
-	"hydrogen_s
-torage" -> hydrogen_bus
 	"electrolyz
 er" -> hydrogen_bus
+	"hydrogen_s
+torage" -> hydrogen_bus
 	hydrogen_bus -> fuel_cell
 	hydrogen_bus -> "hydrogen_s
 torage"
@@ -242,11 +242,11 @@ pg storage"
 	lpg_bus -> "LPG stoves"
 	"bush bioma
 ss" -> woody_biomass_bus
+	"tree bioma
+ss" -> woody_biomass_bus
 	"infinite b
 iomass sto
 rage" -> woody_biomass_bus
-	"tree bioma
-ss" -> woody_biomass_bus
 	"papyrus bi
 omass" -> woody_biomass_bus
 	woody_biomass_bus -> "wood boile

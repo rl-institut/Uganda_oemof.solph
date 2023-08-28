@@ -1,35 +1,35 @@
 ,2021-01-01
 "(('battery', 'electricity'), 'invest')",0.0
 "(('electricity', 'battery'), 'invest')",0.0
-"(('pp_fuel_oil', 'electricity'), 'invest')",3309.2
+"(('pp_fuel_oil', 'electricity'), 'invest')",0.0
 "(('pp_nuclear', 'electricity'), 'invest')",0.0
 "(('pp_peat', 'electricity'), 'invest')",0.0
 "(('pv', 'electricity'), 'invest')",0.0
 "(('wind', 'electricity'), 'invest')",0.0
 "(('biogas heating', 'heat_bus'), 'invest')",0.0
 "(('industrial boiler', 'heat_bus'), 'invest')",0.0
-"(('wood boiler', 'heat_bus'), 'invest')",2868.8
-"(('combustion engine transport vehicles', 'transport_bus'), 'invest')",3990.0
-"(('kerosene aviation', 'aviation_bus'), 'invest')",154.0
+"(('wood boiler', 'heat_bus'), 'invest')",1177.8
+"(('combustion engine transport vehicles', 'transport_bus'), 'invest')",1187.0
+"(('kerosene aviation', 'aviation_bus'), 'invest')",45.81
 storage_invest_GWh,0.0
 wind_invest_MW,0.0
 unsustainable_biomass_MWh,0.0
-total_woody_biomass_MWh,1461581.693447295
+total_woody_biomass_MWh,659022.8105159873
 effective_end_use_stove_improved,"variable_name
-flow    27331.795714
+flow    24006.373334
 dtype: float64"
 effective_end_use_stove_unimproved,"variable_name
-flow    68713.732857
+flow    26880.017556
 dtype: float64"
 non_renewable_biomass_cooking,"variable_name
 flow    0.0
 dtype: float64"
 biofuel_share,"variable_name
-flow    0.066785
+flow    0.0
 dtype: float64"
 RE_share_electricity production,"variable_name
-flow    0.180976
+flow    0.890937
 dtype: float64"
 RE_share_effective_end_use_energy,"variable_name
-flow    0.590091
+flow    0.848717
 dtype: float64"
