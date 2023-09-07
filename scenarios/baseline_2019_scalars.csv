@@ -5,16 +5,16 @@
 "(('pp_nuclear', 'electricity'), 'invest')",0.0
 "(('pp_peat', 'electricity'), 'invest')",0.0
 "(('pv', 'electricity'), 'invest')",0.0
-"(('wind', 'electricity'), 'invest')",0.0
+"(('wind', 'electricity'), 'invest')",2.74767427431089e-12
 "(('biogas heating', 'heat_bus'), 'invest')",0.0
 "(('industrial boiler', 'heat_bus'), 'invest')",0.0
 "(('wood boiler', 'heat_bus'), 'invest')",1177.8
 "(('combustion engine transport vehicles', 'transport_bus'), 'invest')",1187.0
 "(('kerosene aviation', 'aviation_bus'), 'invest')",45.81
 storage_invest_GWh,0.0
-wind_invest_MW,0.0
+wind_invest_MW,2.74767427431089e-15
 unsustainable_biomass_MWh,0.0
-total_woody_biomass_MWh,659022.8105159873
+total_woody_biomass_MWh,659022.8105159871
 effective_end_use_stove_improved,"variable_name
 flow    24006.373334
 dtype: float64"

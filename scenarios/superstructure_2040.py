@@ -44,7 +44,7 @@ from oemof import solph
 filename = os.path.join(os.getcwd(), "uganda_sequences.csv")
 
 data = pd.read_csv(filename)
-number_timesteps = 24  # len(data)
+number_timesteps = 8760  # len(data)
 
 print(data.head())
 ##########################################################################
@@ -102,7 +102,7 @@ epc_combustion_engine_transport = 13937.5
 epc_electric_transport = 20500
 epc_hydrogen_transport = 17875
 epc_kerosene_aviation = 650687.5
-epc_hydrogen_aviation = 1000000
+epc_hydrogen_aviation = 728770
 
 
 ##########################################################################
@@ -475,7 +475,7 @@ airplanes_hydrogen = solph.components.Transformer(
             investment=solph.Investment(ep_costs=epc_hydrogen_aviation)
         )
     },
-    conversion_factors={bavia: 0.3},
+    conversion_factors={bavia: 0.34},
 )
 # kerosene airplanes
 airplanes_kerosene = solph.components.Transformer(
@@ -483,7 +483,7 @@ airplanes_kerosene = solph.components.Transformer(
     inputs={bks: solph.Flow()},
     outputs={
         bavia: solph.Flow(
-            variable_costs=120,
+            variable_costs=129,
             investment=solph.Investment(ep_costs=epc_kerosene_aviation)
         )
     },

@@ -554,7 +554,7 @@ cooker_el = solph.components.Transformer(
     inputs={bel: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=250.16  # 0.0055*38387
+            variable_costs=0, nominal_value=250.16  # 0.0055*20943
         )
     },
     conversion_factors={bcook: 0.8},
@@ -567,7 +567,7 @@ stove_unimproved = solph.components.Transformer(
     inputs={bwood: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=31784  # 0.828*38387,
+            variable_costs=0, nominal_value=31784  # 0.828*20943
         )
     },
     conversion_factors={bcook: 0.135},
@@ -579,7 +579,7 @@ stove_improved = solph.components.Transformer(
     inputs={bwood: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=5374  # 0.14*38387
+            variable_costs=0, nominal_value=5374  # 0.14*20943
         )
     },
     conversion_factors={bcook: 0.325},
@@ -591,7 +591,7 @@ stove_lpg = solph.components.Transformer(
     inputs={blpg: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=499.0  # 0.013*38387
+            variable_costs=0, nominal_value=499.0  # 0.013*20943
         )
     },
     conversion_factors={bcook: 0.5},
@@ -603,7 +603,7 @@ stove_biogas = solph.components.Transformer(
     inputs={bbg: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=211.13  # 0.0055*38387
+            variable_costs=0, nominal_value=211.13  # 0.0055*20943
         )
     },
     conversion_factors={bcook: 0.5},
@@ -615,7 +615,7 @@ stove_ethanol = solph.components.Transformer(
     inputs={bbfuel: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=268.71  # 0.007*38387
+            variable_costs=0, nominal_value=268.71  # 0.007*20943
         )
     },
     conversion_factors={bcook: 0.45},
