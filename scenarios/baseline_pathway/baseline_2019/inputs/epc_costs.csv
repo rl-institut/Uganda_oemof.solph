@@ -1,0 +1,27 @@
+parameter,unit,value
+epc_wind,EPC/MW installed,138172.5
+epc_pv,EPC/MW installed,90345
+epc_hydro,EPC/MW installed,247500
+epc_battery,EPC/MW installed,21812.5
+epc_hydrogen_storage,EPC/MW installed,3937.5
+epc_fuel_oil,EPC/MW installed,98000
+epc_peat,EPC/MW installed,187182.5
+epc_biomass,EPC/MW installed,206250
+epc_electrolyzer,EPC/MW installed,50625
+epc_nuclear,EPC/MW installed,506192.5
+epc_geothermal,EPC/MW installed,330000
+epc_fuel_cell,EPC/MW installed,71750
+epc_cooker_el,EPC/MW installed,830
+epc_biogas_heating,EPC/MW installed,3209
+epc_industrial_boiler,EPC/MW installed,11000
+epc_wood_boiler,EPC/MW installed,4000
+epc_anaerobic_digester,EPC/MW installed,4437.5
+epc_stove_unimproved,EPC/MW installed,52.5
+epc_stove_improved,EPC/MW installed,262.5
+epc_lpg_stove,EPC/MW installed,1300
+epc_ethanol_stove,EPC/MW installed,1000
+epc_combustion_engine_transport,EPC/MW installed,13937.5
+epc_electric_transport,EPC/MW installed,20500
+epc_hydrogen_transport,EPC/MW installed,17875
+epc_kerosene_aviation,EPC/MW installed,650687.5
+epc_hydrogen_aviation,EPC/MW installed,1000000

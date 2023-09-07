@@ -1,0 +1,4 @@
+parameter,unit,value
+tree_biomass_limit,MWh,282272500
+bush_biomass_limit,MWh,11287500
+papyrus_biomass_limit,MWh,4837500
