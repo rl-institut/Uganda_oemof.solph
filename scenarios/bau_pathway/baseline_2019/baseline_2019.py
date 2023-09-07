@@ -53,6 +53,10 @@ energy_prices_csv = "energy_prices_uganda_2023.csv"
 biomass_limits_csv = "sustainable_biomass_limits.csv"
 # Define the timeseries csv filename
 timeseries_csv = "uganda_sequences.csv"
+# Define the demand nominal values csv filename
+demand_nv_csv = "demand_nominal_values.csv"
+# Define the capacities csv filename
+capacities_csv = "capacities.csv"
 # Define the number of timesteps you want to evaluate
 number_timesteps = 24  # len(data)
 
@@ -65,14 +69,31 @@ data = pd.read_csv(timeseries_csv_path)
 epc_costs_csv_path = os.path.join(os.path.dirname(__file__), 'inputs', epc_costs_csv)
 energy_prices_csv_path = os.path.join(os.path.dirname(__file__), 'inputs', energy_prices_csv)
 biomass_limits_csv_path = os.path.join(os.path.dirname(__file__), 'inputs', biomass_limits_csv)
+demand_nv_csv_path = os.path.join(os.path.dirname(__file__), 'inputs', demand_nv_csv)
+capacities_csv_path = os.path.join(os.path.dirname(__file__), 'inputs', capacities_csv)
 # Read csv files into dataframe
 epc_costs_df = pd.read_csv(epc_costs_csv_path)
 energy_prices_df = pd.read_csv(energy_prices_csv_path)
 biomass_limits_df = pd.read_csv(biomass_limits_csv_path)
+demand_nv_df = pd.read_csv(demand_nv_csv_path)
+capacities_df = pd.read_csv(capacities_csv_path)
 # Convert dataframes to dicts
 epc_cost_params = dict(zip(epc_costs_df['parameter'], epc_costs_df['value']))
 energy_price_params = dict(zip(energy_prices_df['parameter'], energy_prices_df['value']))
 biomass_limit_params = dict(zip(biomass_limits_df['parameter'], biomass_limits_df['value']))
+demand_nv_params = dict(zip(demand_nv_df['parameter'], demand_nv_df['value']))
+# Fill missing values with None
+capacities_df['existing'] = capacities_df['existing'].fillna(None)
+capacities_df['nominal_value'] = capacities_df['nominal_value'].fillna(None)
+capacities_df['max'] = capacities_df['max'].fillna(None)
+
+# Create capacities_params dictionary
+capacities_params = {param: [existing, nominal_value, max]
+                     for param, existing, nominal_value, max in
+                     zip(capacities_df['parameter'], capacities_df['existing'],
+                         capacities_df['nominal_value'], capacities_df['max'])}
+
+print(capacities_params['bagasse_resource'])
 
 print(data.head())
 ##########################################################################
@@ -150,7 +171,10 @@ fuel_oil_resource = solph.components.Source(
 
 # create biofuel source object
 biofuel_resource = solph.components.Source(
-    label="biofuel", outputs={bbfuel: solph.Flow(variable_costs=energy_price_params['price_biofuel'], nominal_value=1, max=0)}
+    label="biofuel", outputs={bbfuel: solph.Flow(
+        variable_costs=energy_price_params['price_biofuel'],
+        nominal_value=capacities_params['biofuel_resource'],
+        max=capacities_params['biofuel_resource'])}
 )
 
 # create peat source object
@@ -227,7 +251,7 @@ hydro = solph.components.Source(
     label="hydro",
     outputs={
         bel: solph.Flow(
-            fix=data["hydro"], variable_costs=3, nominal_value=1070
+            fix=data["hydro"], variable_costs=energy_price_params['price_hydro'], nominal_value=1070
         )
     },
 )
@@ -237,7 +261,7 @@ geothermal = solph.components.Source(
     label="geothermal",
     outputs={
         bel: solph.Flow(
-            variable_costs=30, nominal_value=0
+            variable_costs=energy_price_params['price_geothermal'], nominal_value=0
         )
     },
 )
@@ -248,7 +272,7 @@ pp_nuclear = solph.components.Transformer(
     inputs={buran: solph.Flow()},
     outputs={
         bel: solph.Flow(full_load_time_min=number_timesteps,  # constant operation at rated power
-                        variable_costs=13, investment=solph.Investment(ep_costs=epc_cost_params['epc_nuclear']))
+                        variable_costs=energy_price_params['price_pp_nuclear'], investment=solph.Investment(ep_costs=epc_cost_params['epc_nuclear']))
     },
     conversion_factors={bel: 0.33}
 )
@@ -257,7 +281,7 @@ blender_biofuel = solph.components.Transformer(
     label="blender_biofuel",
     inputs={bbfuel: solph.Flow()},
     outputs={
-        bfuel: solph.Flow(variable_costs=0.1, investment=solph.Investment(ep_costs=0, existing=0))
+        bfuel: solph.Flow(variable_costs=energy_price_params['price_blender_biofuel'], investment=solph.Investment(ep_costs=0, existing=0))
     })
 
 # create simple transformer object representing a fuel oil plant
@@ -266,7 +290,7 @@ pp_fuel_oil = solph.components.Transformer(
     inputs={bfuel: solph.Flow()},
     outputs={
         bel: solph.Flow(full_load_time_min=number_timesteps,  # constant operation at rated power
-                        variable_costs=3.4,
+                        variable_costs=energy_price_params['price_pp_fuel_oil'],
                         investment=solph.Investment(ep_costs=epc_cost_params['epc_fuel_oil'], existing=92))
     },
     conversion_factors={bel: 0.375},
@@ -278,7 +302,7 @@ pp_peat = solph.components.Transformer(
     inputs={bpeat: solph.Flow()},
     outputs={
         bel: solph.Flow(full_load_time_min=number_timesteps,  # constant operation at rated power
-                        variable_costs=6.8,
+                        variable_costs=energy_price_params['price_pp_peat'],
                         investment=solph.Investment(ep_costs=epc_cost_params['epc_peat'], existing=0))
     },
     conversion_factors={bel: 0.4},
@@ -291,7 +315,7 @@ digester = solph.components.Transformer(
     inputs={borg: solph.Flow()},
     outputs={
         bbg: solph.Flow(
-            variable_costs=0,
+            variable_costs=energy_price_params['price_digester'],
             investment=solph.Investment(ep_costs=epc_cost_params['epc_anaerobic_digester'])
         )
     },
@@ -303,7 +327,7 @@ biogas_heating = solph.components.Transformer(
     inputs={bbg: solph.Flow()},
     outputs={
         bheat: solph.Flow(
-            variable_costs=0,
+            variable_costs=energy_price_params['price_biogas_heating'],
             investment=solph.Investment(ep_costs=epc_cost_params['epc_biogas_heating'])
         )
     },
@@ -316,7 +340,7 @@ industrial_boiler = solph.components.Transformer(
     inputs={bfuel: solph.Flow()},
     outputs={
         bheat: solph.Flow(
-            variable_costs=0,
+            variable_costs=energy_price_params['price_industrial_boiler'],
             investment=solph.Investment(ep_costs=epc_cost_params['epc_industrial_boiler'])
         )
     },
@@ -329,7 +353,7 @@ wood_boiler = solph.components.Transformer(
     inputs={bwood: solph.Flow()},
     outputs={
         bheat: solph.Flow(
-            variable_costs=0,
+            variable_costs=energy_price_params['price_wood_boiler'],
             investment=solph.Investment(ep_costs=epc_cost_params['epc_wood_boiler'])
         )
     },
@@ -340,7 +364,7 @@ wood_boiler = solph.components.Transformer(
 pp_bagasse = solph.components.Transformer(
     label="pp_bagasse",
     inputs={bba: solph.Flow(
-        variable_costs=5, full_load_time_min=number_timesteps, nominal_value=112
+        variable_costs=energy_price_params['price_pp_bagasse'], full_load_time_min=number_timesteps, nominal_value=112
     )},
     outputs={
         bel: solph.Flow(),
@@ -355,7 +379,7 @@ electrolyzer = solph.components.Transformer(
     inputs={bel: solph.Flow()},
     outputs={
         bhg: solph.Flow(
-            variable_costs=0, nominal_value=0
+            variable_costs=energy_price_params['price_electrolyzer'], nominal_value=0
         )
     },
     conversion_factors={bhg: 0.665},
@@ -367,7 +391,7 @@ fuel_cell = solph.components.Transformer(
     inputs={bhg: solph.Flow()},
     outputs={
         bel: solph.Flow(
-            variable_costs=0, nominal_value=0
+            variable_costs=energy_price_params['price_fuel_cell'], nominal_value=0
         )
     },
     conversion_factors={bel: 0.6},
@@ -376,7 +400,7 @@ fuel_cell = solph.components.Transformer(
 # create storage object representing a battery
 battery_storage = solph.components.GenericStorage(
     label="battery",
-    inputs={bel: solph.Flow(variable_costs=0, nominal_value=0)},
+    inputs={bel: solph.Flow(variable_costs=energy_price_params['price_battery_storage'], nominal_value=0)},
     outputs={bel: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
@@ -390,7 +414,7 @@ battery_storage = solph.components.GenericStorage(
 # create storage object representing a hydrogen storage
 hydrogen_storage = solph.components.GenericStorage(
     label="hydrogen_storage",
-    inputs={bhg: solph.Flow(variable_costs=0, nominal_value=0)},
+    inputs={bhg: solph.Flow(variable_costs=energy_price_params['price_hydrogen_storage'], nominal_value=0)},
     outputs={bhg: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
@@ -407,7 +431,7 @@ transport_el = solph.components.Transformer(
     inputs={bel: solph.Flow()},
     outputs={
         btrans: solph.Flow(
-            variable_costs=150, nominal_value=0,
+            variable_costs=energy_price_params['price_transport_el'], nominal_value=0,
         )
     },
     conversion_factors={btrans: 0.7},
@@ -419,7 +443,7 @@ transport_ce = solph.components.Transformer(
     inputs={bfuel: solph.Flow()},
     outputs={
         btrans: solph.Flow(
-            variable_costs=90,
+            variable_costs=energy_price_params['price_transport_ce'],
             investment=solph.Investment(ep_costs=epc_cost_params['epc_combustion_engine_transport'])
         )
     },
@@ -432,7 +456,7 @@ transport_hg = solph.components.Transformer(
     inputs={bhg: solph.Flow()},
     outputs={
         btrans: solph.Flow(
-            variable_costs=240, nominal_value=0,
+            variable_costs=energy_price_params['price_transport_hg'], nominal_value=0,
         )
     },
     conversion_factors={btrans: 0.3},
@@ -443,7 +467,7 @@ airplanes_hydrogen = solph.components.Transformer(
     inputs={bhg: solph.Flow()},
     outputs={
         bavia: solph.Flow(
-            variable_costs=180, nominal_value=0,
+            variable_costs=energy_price_params['price_airplanes_hydrogen'], nominal_value=0,
         )
     },
     conversion_factors={bavia: 0.3},
@@ -454,7 +478,7 @@ airplanes_kerosene = solph.components.Transformer(
     inputs={bks: solph.Flow()},
     outputs={
         bavia: solph.Flow(
-            variable_costs=120,
+            variable_costs=energy_price_params['price_airplanes_kerosene'],
             investment=solph.Investment(ep_costs=epc_cost_params['epc_kerosene_aviation'])
         )
     },
@@ -463,7 +487,7 @@ airplanes_kerosene = solph.components.Transformer(
 
 infinite_wood_storage = solph.components.GenericStorage(
     label="infinite biomass storage",
-    inputs={bwood: solph.Flow(variable_costs=0)},
+    inputs={bwood: solph.Flow(variable_costs=energy_price_params['price_infinite_wood_storage'])},
     outputs={bwood: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
@@ -477,7 +501,7 @@ infinite_wood_storage = solph.components.GenericStorage(
 # infinite and free storage kerosene
 infinite_kerosene_storage = solph.components.GenericStorage(
     label="infinite kerosene storage",
-    inputs={bks: solph.Flow(variable_costs=0)},
+    inputs={bks: solph.Flow(variable_costs=energy_price_params['price_infinite_kerosene_storage'])},
     outputs={bks: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
@@ -491,7 +515,7 @@ infinite_kerosene_storage = solph.components.GenericStorage(
 # infinite and free storage fuel oil
 infinite_fuel_storage = solph.components.GenericStorage(
      label="infinite fuel oil storage",
-     inputs={bfuel: solph.Flow(variable_costs=0)},
+     inputs={bfuel: solph.Flow(variable_costs=energy_price_params['price_infinite_fuel_storage'])},
      outputs={bfuel: solph.Flow()},
      loss_rate=0.00,
      initial_storage_level=0,
@@ -504,7 +528,7 @@ infinite_fuel_storage = solph.components.GenericStorage(
 # infinite and free storage lpg
 infinite_lpg_storage = solph.components.GenericStorage(
     label="infinite lpg storage",
-    inputs={blpg: solph.Flow(variable_costs=0)},
+    inputs={blpg: solph.Flow(variable_costs=energy_price_params['price_infinite_lpg_storage'])},
     outputs={blpg: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
@@ -517,7 +541,7 @@ infinite_lpg_storage = solph.components.GenericStorage(
 # infinite and free storage biogas
 infinite_biogas_storage = solph.components.GenericStorage(
     label="infinite biogas storage",
-    inputs={bbg: solph.Flow(variable_costs=0)},
+    inputs={bbg: solph.Flow(variable_costs=energy_price_params['price_infinite_biogas_storage'])},
     outputs={bbg: solph.Flow()},
     loss_rate=0.00,
     initial_storage_level=0,
@@ -534,20 +558,19 @@ cooker_el = solph.components.Transformer(
     inputs={bel: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=250.16  # 0.0055*20943
+            variable_costs=energy_price_params['price_cooker_el'], nominal_value=250.16  # 0.0055*20943
         )
     },
     conversion_factors={bcook: 0.8},
 )
 
 # unimproved stove
-
 stove_unimproved = solph.components.Transformer(
     label="unimproved stoves",
     inputs={bwood: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=31784  # 0.828*20943,
+            variable_costs=energy_price_params['price_stove_unimproved'], nominal_value=31784  # 0.828*20943,
         )
     },
     conversion_factors={bcook: 0.135},
@@ -559,7 +582,7 @@ stove_improved = solph.components.Transformer(
     inputs={bwood: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=5374  # 0.14*20943
+            variable_costs=energy_price_params['price_stove_improved'], nominal_value=5374  # 0.14*20943
         )
     },
     conversion_factors={bcook: 0.325},
@@ -571,7 +594,7 @@ stove_lpg = solph.components.Transformer(
     inputs={blpg: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=499.0  # 0.013*20943
+            variable_costs=energy_price_params['price_stove_lpg'], nominal_value=499.0  # 0.013*20943
         )
     },
     conversion_factors={bcook: 0.5},
@@ -583,7 +606,7 @@ stove_biogas = solph.components.Transformer(
     inputs={bbg: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=211.13  # 0.0055*20943
+            variable_costs=energy_price_params['price_stove_biogas'], nominal_value=211.13  # 0.0055*20943
         )
     },
     conversion_factors={bcook: 0.5},
@@ -595,7 +618,7 @@ stove_ethanol = solph.components.Transformer(
     inputs={bbfuel: solph.Flow()},
     outputs={
         bcook: solph.Flow(
-            variable_costs=0, nominal_value=268.71  # 0.007*20943
+            variable_costs=energy_price_params['price_stove_ethanol'], nominal_value=268.71  # 0.007*20943
         )
     },
     conversion_factors={bcook: 0.45},
@@ -603,13 +626,13 @@ stove_ethanol = solph.components.Transformer(
 # create simple sink object representing the electrical demand
 demand_el = solph.components.Sink(
     label="electricity demand",
-    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=740.6)},
+    inputs={bel: solph.Flow(fix=data["demand_el"], nominal_value=demand_nv_params['demand_el'])},
 )
 
 # create simple sink object representing the heat demand
 demand_heat = solph.components.Sink(
     label="heat demand",
-    inputs={bheat: solph.Flow(fix=data["demand_heat"], nominal_value=1217)},
+    inputs={bheat: solph.Flow(fix=data["demand_heat"], nominal_value=demand_nv_params['demand_heat'])},
 )
 
 # create simple sink object representing excess electricty production allowing overproduction
@@ -621,17 +644,17 @@ excess_electricity = solph.components.Sink(
 # create simple sink object representing the cooking demand
 demand_cooking = solph.components.Sink(
     label="cooking demand",
-    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=20943)},
+    inputs={bcook: solph.Flow(fix=data["demand_cooking"], nominal_value=demand_nv_params['demand_cooking'])},
 )
 
 demand_transport = solph.components.Sink(
     label="transport demand",
-    inputs={btrans: solph.Flow(fix=data["demand_transport"], nominal_value=1187)},
+    inputs={btrans: solph.Flow(fix=data["demand_transport"], nominal_value=demand_nv_params['demand_transport'])},
 )
 
 demand_aviation = solph.components.Sink(
     label="aviation demand",
-    inputs={bavia: solph.Flow(fix=data["demand_aviation"], nominal_value=45.81)},
+    inputs={bavia: solph.Flow(fix=data["demand_aviation"], nominal_value=demand_nv_params['demand_aviation'])},
 )
 
 # cooking demand, transport demand sinks!

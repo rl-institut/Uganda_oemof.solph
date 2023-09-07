@@ -1,0 +1,6 @@
+parameter,unit,value
+demand_el,MWh,619.58
+demand_heat,MWh,1217.34
+demand_cooking,MWh,21357.66
+demand_transport,MWh,1187.11
+demand_aviation,MWh,45.81

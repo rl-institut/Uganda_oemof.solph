@@ -3,7 +3,35 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="\scenarios\baseline_pathway\baseline_2019\inputs\energy_prices_uganda_2023.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\scenarios\baseline_pathway\baseline_2019\results\baseline_2019_scalars.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\scenarios\bau_pathway\baseline_2019\inputs\capacities.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\scenarios\bau_pathway\baseline_2019\inputs\demand_nominal_values.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\scenarios\bau_pathway\baseline_2019\inputs\energy_prices_uganda_2023.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

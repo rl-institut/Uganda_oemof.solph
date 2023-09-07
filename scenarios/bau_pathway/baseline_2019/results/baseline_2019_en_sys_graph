@@ -106,12 +106,12 @@ ctricity" [fontsize=10 shape=trapezium]
 viation" [fontsize=10 shape=rectangle]
 	"hydrogen a
 viation" [fontsize=10 shape=rectangle]
+	"blender_bi
+ofuel" -> fuel_bus
+	fuel_oil -> fuel_bus
 	"infinite f
 uel oil st
 orage" -> fuel_bus
-	fuel_oil -> fuel_bus
-	"blender_bi
-ofuel" -> fuel_bus
 	fuel_bus -> "pp_fuel_oi
 l"
 	fuel_bus -> "industrial
@@ -130,17 +130,17 @@ ofuel"
 oves"
 	uranium -> uranium_bus
 	uranium_bus -> pp_nuclear
-	pv -> electricity
-	fuel_cell -> electricity
 	pp_bagasse -> electricity
-	pp_nuclear -> electricity
-	hydro -> electricity
 	battery -> electricity
-	wind -> electricity
 	geothermal -> electricity
 	"pp_fuel_oi
 l" -> electricity
+	pp_nuclear -> electricity
+	hydro -> electricity
+	fuel_cell -> electricity
+	wind -> electricity
 	pp_peat -> electricity
+	pv -> electricity
 	electricity -> "electrolyz
 er"
 	electricity -> battery
@@ -157,10 +157,10 @@ ctricity"
 	peat_bus -> pp_peat
 	"human wast
 e" -> organic_waste_bus
-	"animal was
-te" -> organic_waste_bus
 	"vegetal wa
 ste" -> organic_waste_bus
+	"animal was
+te" -> organic_waste_bus
 	organic_waste_bus -> digester
 	kerosene -> kerosene_bus
 	"infinite k
@@ -173,10 +173,10 @@ erosene st
 orage"
 	bagasse -> bagasse_bus
 	bagasse_bus -> pp_bagasse
-	digester -> biogas_bus
 	"infinite b
 iogas stor
 age" -> biogas_bus
+	digester -> biogas_bus
 	biogas_bus -> "biogas hea
 ting"
 	biogas_bus -> "infinite b
@@ -210,23 +210,23 @@ viation" -> aviation_bus
 viation" -> aviation_bus
 	aviation_bus -> "aviation d
 emand"
-	"biogas sto
-ves" -> cooking_bus
 	"electric c
 ookers" -> cooking_bus
-	"LPG stoves" -> cooking_bus
 	"improved s
 toves" -> cooking_bus
+	"LPG stoves" -> cooking_bus
 	"ethanol st
 oves" -> cooking_bus
 	"unimproved
  stoves" -> cooking_bus
+	"biogas sto
+ves" -> cooking_bus
 	cooking_bus -> "cooking de
 mand"
-	"electrolyz
-er" -> hydrogen_bus
 	"hydrogen_s
 torage" -> hydrogen_bus
+	"electrolyz
+er" -> hydrogen_bus
 	hydrogen_bus -> fuel_cell
 	hydrogen_bus -> "hydrogen_s
 torage"
@@ -240,9 +240,9 @@ pg storage" -> lpg_bus
 	lpg_bus -> "infinite l
 pg storage"
 	lpg_bus -> "LPG stoves"
-	"bush bioma
-ss" -> woody_biomass_bus
 	"tree bioma
+ss" -> woody_biomass_bus
+	"bush bioma
 ss" -> woody_biomass_bus
 	"infinite b
 iomass sto
